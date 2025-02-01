@@ -41,23 +41,3 @@ The HeadlineHub API is currently under development. The features listed below ar
 * **🐸 Dart Frog:** A modern and performant Dart framework for building backend applications.
 * **🐘 PostgreSQL:** The chosen database system for data persistence.
 * **🔐 JWT:** JSON Web Tokens for secure authentication and authorization.
-
-**⚠️ Disclaimer**
-
-This API is currently under development and may contain bugs or have limited functionality.
-
-## 📝 License
-
-HeadlineHub app offers a [PolyForm-Free-Trial](https://polyformproject.org/licenses/free-trial/1.0.0/) license provided with the source code. Users can seamlessly upgrade to the robust [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) license with a single, [one-time payment](https://polar.sh/headlinehub/).
-
-### Understanding the PolyForm Free Trial License
-This evaluation license provides a 32-day period for comprehensive assessment and modification of the code's functionality. Continued utilization beyond this evaluation period necessitates the acquisition of a [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) license.
-
-### Understanding the PolyForm Perimeter License
-This license grants unlimited rights to utilize, modify, and distribute derivatives of the licensed source code, expressly prohibiting the distribution of the source code itself, whether for commercial gain or without charge.
-
-### Do I need separate licenses for the HeadlineHub app and dashboard?
-**No**, a single [license](https://polar.sh/headlinehub/) covers all three.
-
----
-Should you have any further questions, please do not hesitate to inquire [here](https://github.com/headlinehub/api/issues)."
