@@ -44,7 +44,7 @@ This project is currently under active development. Features described below may
 
 ## 📝 License
 
-HeadlineHub offers a [PolyForm-Free-Trial](https://polyformproject.org/licenses/free-trial/1.0.0/) license for evaluation, upgradeable to [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) with a [single payment](https://polar.sh/headlinehub/).
+HeadlineHub offers a [PolyForm-Free-Trial](https://polyformproject.org/licenses/free-trial/1.0.0/) license for evaluation, upgradeable to [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) with a [single payment]().
 
 ### ⌛ Understanding the PolyForm Free Trial License
 This evaluation license provides a 32-day period for comprehensive assessment and modification of the code's functionality. Continued utilization beyond this evaluation period necessitates the acquisition of a [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) license.
@@ -56,4 +56,7 @@ This license grants **unlimited** rights to **utilize**, **modify**, and **distr
 A single license covers all three (app, dashboard, and API).
 
 ---
-Questions? [Open an issue](https://github.com/fulleni/headlinehub/issues)
+**Questions?** 
+Feel free to ask [here](https://github.com/fulleni/headlinehub/issues) and our team will be happy to help.
+
+
