@@ -40,7 +40,7 @@ This project is currently under active development. Features described below may
 
 ## 📝 License
 
-HeadlineHub offers a [PolyForm-Free-Trial](https://polyformproject.org/licenses/free-trial/1.0.0/) license for evaluation, upgradeable to [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) with a [single payment]().
+HeadlineHub offers a [PolyForm-Free-Trial](https://polyformproject.org/licenses/free-trial/1.0.0/) license for evaluation, upgradeable to [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) with a [one-time](https://buy.polar.sh/polar_cl_UAENVq8gx7JkUUWOH7ud1vkzTGhCJQMy9yYTW3v1G2A) payment.
 
 ### ⌛ Understanding the PolyForm Free Trial License
 This evaluation license provides a 32-day period for comprehensive assessment and modification of the code's functionality. Continued utilization beyond this evaluation period necessitates the acquisition of a [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) license.
