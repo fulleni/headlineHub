@@ -1,21 +1,17 @@
 # 📰 HeadlineHub 📰
-
-**A modern news aggregation and management platform built with Flutter and Dart**
+**A modern news aggregation and management platform built with Flutter and Dart**, 
 
 ## 🗺️ Project Overview
-
-HeadlineHub is a comprehensive news platform consisting of three main components:
+Leveraging Flutter and Dart, HeadlineHub provides three premium applications:
 
 * **📱 [HeadlineHub Mobile App](./apps/headlinehub_app)** - A Flutter mobile application providing personalized news experiences
 * **📊 [HeadlineHub Dashboard](./apps/headlinehub_dashboard)** - A Flutter web application for administrative control
 * **⚙️ [HeadlineHub API](./apps/headlinehub_api)** - A Dart Frog backend API serving both the app and dashboard
 
 ## 🚧 Development Status
-
 This project is currently under active development. Features described below may be planned or in progress.
 
 ## 🔑 Key Features
-
 ### 📱 Mobile App
 * Personalized news feeds
 * Multiple news sources integration
