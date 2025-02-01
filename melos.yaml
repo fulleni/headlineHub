@@ -1,0 +1,4 @@
+name: headlineHub
+packages:
+  - apps/*
+  - packages/*
