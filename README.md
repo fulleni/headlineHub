@@ -1,4 +1,4 @@
-# 📰 HeadlineHub Project 📰
+# 📰 HeadlineHub 📰
 
 **A modern news aggregation and management platform built with Flutter and Dart**
 
