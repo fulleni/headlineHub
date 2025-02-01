@@ -12,7 +12,7 @@ HeadlineHub is a comprehensive news platform consisting of three main components
 
 ## 🚧 Development Status
 
-This project is currently under active development. Features described in component READMEs may be planned or in progress.
+This project is currently under active development. Features described below may be planned or in progress.
 
 ## 🔑 Key Features
 
@@ -41,19 +41,19 @@ This project is currently under active development. Features described in compon
 * **Frontend:** Flutter/Dart
 * **Backend:** Dart Frog
 * **Database:** PostgreSQL
-* **Authentication:** JWT
 
 ## 📝 License
 
 HeadlineHub offers a [PolyForm-Free-Trial](https://polyformproject.org/licenses/free-trial/1.0.0/) license for evaluation, upgradeable to [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) with a [single payment](https://polar.sh/headlinehub/).
 
-### License Coverage
-A single license covers all three components (app, dashboard, and API).
+### ⌛ Understanding the PolyForm Free Trial License
+This evaluation license provides a 32-day period for comprehensive assessment and modification of the code's functionality. Continued utilization beyond this evaluation period necessitates the acquisition of a [PolyForm-Perimeter](https://polyformproject.org/licenses/perimeter/1.0.1/) license.
 
-For detailed information about each component, please visit their respective directories:
-* [Mobile App](./apps/headlinehub_app)
-* [Dashboard](./apps/headlinehub_dashboard)
-* [API](./apps/headlinehub_api)
+### 💎 Understanding the PolyForm Perimeter License
+This license grants **unlimited** rights to **utilize**, **modify**, and **distribute** derivatives of the licensed source code, expressly **prohibiting** the **distribution of the source code itself**, whether for commercial gain or without charge.
+
+### ☂️ License Coverage
+A single license covers all three (app, dashboard, and API).
 
 ---
-Questions? [Open an issue](https://github.com/fulleni/headlinehub)
+Questions? [Open an issue](https://github.com/fulleni/headlinehub/issues)
