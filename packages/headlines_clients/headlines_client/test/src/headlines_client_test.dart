@@ -1,112 +1,142 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: avoid_redundant_argument_values
+
 import 'package:headlinehub_models/headlinehub_models.dart';
-import 'package:headlines_client/headlines_client.dart';
+import 'package:headlines_client/src/headlines_client.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 class MockHeadlinesClient extends Mock implements HeadlinesClient {}
 
+class FakeHeadline extends Fake implements Headline {}
+
+class FakeHeadlineQueryOptions extends Fake implements HeadlineQueryOptions {}
+
+
 void main() {
+  late MockHeadlinesClient client;
+  late Headline testHeadline;
+  late HeadlineResponse testResponse;
+
   setUpAll(() {
-    // HeadlineCategory is Placed before the Headline registration 
-    // since Headline depends on HeadlineCategory
+    registerFallbackValue(FakeHeadline());
+    registerFallbackValue(FakeHeadlineQueryOptions());
     registerFallbackValue(HeadlineCategory.general);
-    registerFallbackValue(
-      Headline(
-        id: 'fallback-id',
-        title: 'Fallback Title',
-        content: 'Fallback Content',
-        source: 'Fallback Source',
-        imageUrl: 'https://example.com/fallback.jpg',
-        publishedAt: DateTime(2023),
-        // ignore: avoid_redundant_argument_values
-        category: HeadlineCategory.general,
+  });
+
+  setUp(() {
+    client = MockHeadlinesClient();
+    testHeadline = Headline(
+      id: '1',
+      title: 'Test Headline',
+      content: 'Test Content',
+      source: 'Test Source',
+      imageUrl: 'https://example.com/image.jpg',
+      publishedAt: DateTime.now(),
+      category: HeadlineCategory.technology,
+      isActive: true,
+    );
+    testResponse = HeadlineResponse(
+      headlines: [testHeadline],
+      paginationMetadata: const PaginationMetadata(
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
       ),
     );
   });
 
-  group('HeadlinesClient', () {
-    late MockHeadlinesClient client;
-    late Headline testHeadline;
+  group('HeadlinesClient CRUD operations', () {
+    test('getHeadlines returns stream of HeadlineResponse', () {
+      when(() => client.getHeadlines(any()))
+          .thenAnswer((_) => Stream.value(testResponse));
 
-    setUp(() {
-      client = MockHeadlinesClient();
-      testHeadline = Headline(
-        id: '1',
-        title: 'Test Headline',
-        content: 'Test Content',
-        source: 'Test Source',
-        imageUrl: 'https://example.com/image.jpg',
-        publishedAt: DateTime(2023),
-        category: HeadlineCategory.technology,
-        // ignore: avoid_redundant_argument_values
-        isActive: true,
+      expect(
+        client.getHeadlines(),
+        emits(testResponse),
       );
     });
 
-    test('getHeadlines returns list of headlines', () async {
-      when(() => client.getHeadlines()).thenAnswer((_) async => [testHeadline]);
-
-      final headlines = await client.getHeadlines();
-      expect(headlines, isA<List<Headline>>());
-      expect(headlines.length, 1);
-      expect(headlines.first, equals(testHeadline));
-      verify(() => client.getHeadlines()).called(1);
-    });
-
-    test('getHeadline returns single headline', () async {
+    test('getHeadline returns specific headline', () async {
       when(() => client.getHeadline(any()))
           .thenAnswer((_) async => testHeadline);
 
-      final headline = await client.getHeadline('1');
-      expect(headline, isA<Headline>());
-      expect(headline, equals(testHeadline));
-      verify(() => client.getHeadline('1')).called(1);
+      final result = await client.getHeadline('1');
+      expect(result, equals(testHeadline));
     });
 
     test('createHeadline creates new headline', () async {
       when(() => client.createHeadline(any()))
           .thenAnswer((_) async => testHeadline);
 
-      final created = await client.createHeadline(testHeadline);
-      expect(created, isA<Headline>());
-      verify(() => client.createHeadline(testHeadline)).called(1);
+      final result = await client.createHeadline(testHeadline);
+      expect(result, equals(testHeadline));
     });
 
     test('updateHeadline updates existing headline', () async {
       when(() => client.updateHeadline(any()))
           .thenAnswer((_) async => testHeadline);
 
-      final updated = await client.updateHeadline(testHeadline);
-      expect(updated, isA<Headline>());
-      verify(() => client.updateHeadline(testHeadline)).called(1);
+      final result = await client.updateHeadline(testHeadline);
+      expect(result, equals(testHeadline));
     });
 
-    test('deleteHeadline deletes headline', () async {
+    test('deleteHeadline completes successfully', () async {
       when(() => client.deleteHeadline(any())).thenAnswer((_) async {});
 
-      await client.deleteHeadline('1');
-      verify(() => client.deleteHeadline('1')).called(1);
+      expect(client.deleteHeadline('1'), completes);
+    });
+  });
+
+  group('HeadlinesClient search and filter operations', () {
+    test('getHeadlinesByQuery returns filtered stream', () {
+      when(() => client.getHeadlinesByQuery(any(), any()))
+          .thenAnswer((_) => Stream.value(testResponse));
+
+      expect(
+        client.getHeadlinesByQuery('test'),
+        emits(testResponse),
+      );
     });
 
-    test('getHeadlinesByCategory returns filtered headlines', () async {
-      when(() => client.getHeadlinesByCategory(any()))
-          .thenAnswer((_) async => [testHeadline]);
+    test('getHeadlinesByCategory returns category-filtered stream', () {
+      when(() => client.getHeadlinesByCategory(any(), any()))
+          .thenAnswer((_) => Stream.value(testResponse));
 
-      final headlines =
-          await client.getHeadlinesByCategory(HeadlineCategory.technology);
-      expect(headlines, isA<List<Headline>>());
-      verify(() => client.getHeadlinesByCategory(HeadlineCategory.technology))
-          .called(1);
+      expect(
+        client.getHeadlinesByCategory(HeadlineCategory.technology),
+        emits(testResponse),
+      );
     });
 
-    test('searchHeadlines returns matching headlines', () async {
-      when(() => client.searchHeadlines(any()))
-          .thenAnswer((_) async => [testHeadline]);
+    test('getHeadlinesByDateRange returns date-filtered stream', () {
+      when(() => client.getHeadlinesByDateRange(any(), any(), any()))
+          .thenAnswer((_) => Stream.value(testResponse));
 
-      final headlines = await client.searchHeadlines('test');
-      expect(headlines, isA<List<Headline>>());
-      verify(() => client.searchHeadlines('test')).called(1);
+      final now = DateTime.now();
+      expect(
+        client.getHeadlinesByDateRange(
+          now.subtract(const Duration(days: 1)),
+          now,
+        ),
+        emits(testResponse),
+      );
+    });
+  });
+
+  group('HeadlinesClient stream lifecycle', () {
+    test('pauseAllStreams completes without error', () {
+      expect(() => client.pauseAllStreams(), returnsNormally);
+    });
+
+    test('resumeAllStreams completes without error', () {
+      expect(() => client.resumeAllStreams(), returnsNormally);
+    });
+
+    test('dispose completes successfully', () {
+      when(() => client.dispose()).thenAnswer((_) async {});
+      expect(client.dispose(), completes);
     });
   });
 }

@@ -4,6 +4,50 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'headline_response.g.dart';
 
+/// A model that represents the metadata for paginated responses.
+@JsonSerializable(explicitToJson: true)
+class PaginationMetadata extends Equatable {
+  /// Creates new [PaginationMetadata]
+  const PaginationMetadata({
+    required this.currentPage,
+    required this.totalPages,
+    required this.totalItems,
+    required this.hasNextPage,
+    required this.hasPreviousPage,
+  });
+
+  /// Creates a [PaginationMetadata] instance from JSON
+  factory PaginationMetadata.fromJson(Map<String, dynamic> json) =>
+      _$PaginationMetadataFromJson(json);
+
+  /// Current page number
+  final int currentPage;
+
+  /// Total number of pages
+  final int totalPages;
+
+  /// Total number of items across all pages
+  final int totalItems;
+
+  /// Whether there is a next page
+  final bool hasNextPage;
+
+  /// Whether there is a previous page
+  final bool hasPreviousPage;
+
+  /// Converts this instance to JSON
+  Map<String, dynamic> toJson() => _$PaginationMetadataToJson(this);
+
+  @override
+  List<Object?> get props => [
+        currentPage,
+        totalPages,
+        totalItems,
+        hasNextPage,
+        hasPreviousPage,
+      ];
+}
+
 /// A response model that wraps a paginated list of headlines.
 ///
 /// This model is used for API responses that return multiple headlines,
@@ -14,16 +58,10 @@ class HeadlineResponse extends Equatable {
   /// Creates a new [HeadlineResponse] instance.
   ///
   /// [headlines] is the list of headlines for the current page.
-  /// [total] is the total number of headlines available.
-  /// [page] is the current page number.
-  /// [perPage] is the number of headlines per page.
-  /// [message] is an optional status or information message.
+  /// [paginationMetadata] is the pagination metadata for the response.
   const HeadlineResponse({
     required this.headlines,
-    required this.total,
-    required this.page,
-    required this.perPage,
-    this.message,
+    required this.paginationMetadata,
   });
 
   /// Creates a [HeadlineResponse] instance from a JSON map.
@@ -36,18 +74,9 @@ class HeadlineResponse extends Equatable {
   /// The list of headlines for the current page.
   final List<Headline> headlines;
 
-  /// The total number of headlines available across all pages.
-  final int total;
+  /// The pagination metadata for the response.
+  final PaginationMetadata paginationMetadata;
 
-  /// The current page number (1-based indexing).
-  final int page;
-
-  /// The number of headlines per page.
-  final int perPage;
-
-  /// Optional status or information message.
-  final String? message;
-  
   /// Converts this [HeadlineResponse] instance to a JSON map.
   ///
   /// Returns a [Map] containing all properties in a JSON-compatible format.
@@ -57,26 +86,17 @@ class HeadlineResponse extends Equatable {
   /// with new values.
   HeadlineResponse copyWith({
     List<Headline>? headlines,
-    int? total,
-    int? page,
-    int? perPage,
-    String? message,
+    PaginationMetadata? paginationMetadata,
   }) {
     return HeadlineResponse(
       headlines: headlines ?? this.headlines,
-      total: total ?? this.total,
-      page: page ?? this.page,
-      perPage: perPage ?? this.perPage,
-      message: message ?? this.message,
+      paginationMetadata: paginationMetadata ?? this.paginationMetadata,
     );
   }
 
   @override
   List<Object?> get props => [
         headlines,
-        total,
-        page,
-        perPage,
-        message,
+        paginationMetadata,
       ];
 }
