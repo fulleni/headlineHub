@@ -1,0 +1,16 @@
+name: headlines_client
+description: Abstract headlines client that all future clients will implement
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dependencies: 
+  headlinehub_models:
+    path: ../../../packages/headlinehub_models
+
+dev_dependencies:
+  mocktail: ^1.0.4
+  test: ^1.25.8
+  very_good_analysis: ^6.0.0

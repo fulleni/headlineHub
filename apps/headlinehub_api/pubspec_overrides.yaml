@@ -1,0 +1,4 @@
+# melos_managed_dependency_overrides: headlinehub_models
+dependency_overrides:
+  headlinehub_models:
+    path: ..\\..\\packages\\headlinehub_models
