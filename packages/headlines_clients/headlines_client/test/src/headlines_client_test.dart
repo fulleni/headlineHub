@@ -1,7 +1,7 @@
-// ignore_for_file: avoid_redundant_argument_values
+// ignore_for_file: lines_longer_than_80_chars
 
 import 'package:headlinehub_models/headlinehub_models.dart';
-import 'package:headlines_client/src/headlines_client.dart';
+import 'package:headlines_client/headlines_client.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -12,130 +12,156 @@ class FakeHeadline extends Fake implements Headline {}
 class FakeHeadlineQueryOptions extends Fake implements HeadlineQueryOptions {}
 
 void main() {
-  late MockHeadlinesClient client;
-  late Headline testHeadline;
-  late PaginatedResponse testResponse;
-
   setUpAll(() {
     registerFallbackValue(FakeHeadline());
     registerFallbackValue(FakeHeadlineQueryOptions());
     registerFallbackValue(HeadlineCategory.general);
   });
 
-  setUp(() {
-    client = MockHeadlinesClient();
-    testHeadline = Headline(
-      id: '1',
-      title: 'Test Headline',
-      content: 'Test Content',
-      publishedBy: 'Test Source',
-      publishedIn: 'https://example.com/image.jpg',
-      publishedAt: DateTime.now(),
-      category: HeadlineCategory.technology,
-      isActive: true,
-    );
-    testResponse = PaginatedResponse(
-      items: [testHeadline],
-      paginationMetadata: const PaginationMetadata(
-        currentPage: 1,
-        totalPages: 1,
-        totalItems: 1,
-        hasNextPage: false,
-        hasPreviousPage: false,
-      ),
-    );
-  });
+  group('HeadlinesClient', () {
+    late MockHeadlinesClient client;
 
-  group('HeadlinesClient CRUD operations', () {
-    test('getHeadlines returns stream of HeadlineResponse', () {
+    setUp(() {
+      client = MockHeadlinesClient();
+    });
+
+    test('getHeadlines returns empty list', () async {
       when(() => client.getHeadlines(any()))
-          .thenAnswer((_) => Stream.value(testResponse));
+          .thenAnswer((_) async => const PaginatedResponse<Headline>(
+                items: [],
+                currentPage: 1,
+                totalPages: 1,
+                totalItems: 0,
+                hasNextPage: false,
+                hasPreviousPage: false,
+              ));
 
-      expect(
-        client.getHeadlines(),
-        emits(testResponse),
+      final response = await client.getHeadlines();
+      expect(response.items, isEmpty);
+    });
+
+    test('getHeadline returns null for non-existent headline', () async {
+      when(() => client.getHeadline(any())).thenAnswer((_) async => null);
+
+      final headline = await client.getHeadline('non-existent-id');
+      expect(headline, isNull);
+    });
+
+    test('createHeadline returns the created headline', () async {
+      final headline = Headline(
+        id: '1',
+        title: 'Test Headline',
+        content: 'Test Content',
+        publishedBy: const Source(
+          id: 'source-1',
+          name: 'Test Source',
+          description: 'Test Description',
+          url: 'https://test.com',
+          language: Language(code: 'en', name: 'English'),
+          country: Country(
+              code: 'US',
+              name: 'United States',
+              flagUrl: 'https://test.com/flag.png'),
+        ),
+        imageUrl: 'https://test.com/image.png',
+        publishedAt: DateTime.now(),
+        happenedIn: const Country(
+            code: 'US',
+            name: 'United States',
+            flagUrl: 'https://test.com/flag.png'),
+        language: const Language(code: 'en', name: 'English'),
       );
-    });
 
-    test('getHeadline returns specific headline', () async {
-      when(() => client.getHeadline(any()))
-          .thenAnswer((_) async => testHeadline);
-
-      final result = await client.getHeadline('1');
-      expect(result, equals(testHeadline));
-    });
-
-    test('createHeadline creates new headline', () async {
       when(() => client.createHeadline(any()))
-          .thenAnswer((_) async => testHeadline);
+          .thenAnswer((_) async => headline);
 
-      final result = await client.createHeadline(testHeadline);
-      expect(result, equals(testHeadline));
+      final createdHeadline = await client.createHeadline(headline);
+      expect(createdHeadline, equals(headline));
     });
 
-    test('updateHeadline updates existing headline', () async {
+    test('updateHeadline returns the updated headline', () async {
+      final headline = Headline(
+        id: '1',
+        title: 'Updated Headline',
+        content: 'Updated Content',
+        publishedBy: const Source(
+          id: 'source-1',
+          name: 'Test Source',
+          description: 'Test Description',
+          url: 'https://test.com',
+          language: Language(code: 'en', name: 'English'),
+          country: Country(
+              code: 'US',
+              name: 'United States',
+              flagUrl: 'https://test.com/flag.png'),
+        ),
+        imageUrl: 'https://test.com/image.png',
+        publishedAt: DateTime.now(),
+        happenedIn: const Country(
+            code: 'US',
+            name: 'United States',
+            flagUrl: 'https://test.com/flag.png'),
+        language: const Language(code: 'en', name: 'English'),
+      );
+
       when(() => client.updateHeadline(any()))
-          .thenAnswer((_) async => testHeadline);
+          .thenAnswer((_) async => headline);
 
-      final result = await client.updateHeadline(testHeadline);
-      expect(result, equals(testHeadline));
+      final updatedHeadline = await client.updateHeadline(headline);
+      expect(updatedHeadline, equals(headline));
     });
 
-    test('deleteHeadline completes successfully', () async {
+    test('deleteHeadline completes without error', () async {
       when(() => client.deleteHeadline(any())).thenAnswer((_) async {});
 
-      expect(client.deleteHeadline('1'), completes);
+      await client.deleteHeadline('1');
     });
-  });
 
-  group('HeadlinesClient search and filter operations', () {
-    test('getHeadlinesByQuery returns filtered stream', () {
+    test('getHeadlinesByQuery returns empty list', () async {
       when(() => client.getHeadlinesByQuery(any(), any()))
-          .thenAnswer((_) => Stream.value(testResponse));
+          .thenAnswer((_) async => const PaginatedResponse<Headline>(
+                items: [],
+                currentPage: 1,
+                totalPages: 1,
+                totalItems: 0,
+                hasNextPage: false,
+                hasPreviousPage: false,
+              ));
 
-      expect(
-        client.getHeadlinesByQuery('test'),
-        emits(testResponse),
-      );
+      final response = await client.getHeadlinesByQuery('test');
+      expect(response.items, isEmpty);
     });
 
-    test('getHeadlinesByCategory returns category-filtered stream', () {
+    test('getHeadlinesByCategory returns empty list', () async {
       when(() => client.getHeadlinesByCategory(any(), any()))
-          .thenAnswer((_) => Stream.value(testResponse));
+          .thenAnswer((_) async => const PaginatedResponse<Headline>(
+                items: [],
+                currentPage: 1,
+                totalPages: 1,
+                totalItems: 0,
+                hasNextPage: false,
+                hasPreviousPage: false,
+              ));
 
-      expect(
-        client.getHeadlinesByCategory(HeadlineCategory.technology),
-        emits(testResponse),
-      );
+      final response =
+          await client.getHeadlinesByCategory(HeadlineCategory.general);
+      expect(response.items, isEmpty);
     });
 
-    test('getHeadlinesByDateRange returns date-filtered stream', () {
+    test('getHeadlinesByDateRange returns empty list', () async {
       when(() => client.getHeadlinesByDateRange(any(), any(), any()))
-          .thenAnswer((_) => Stream.value(testResponse));
+          .thenAnswer((_) async => const PaginatedResponse<Headline>(
+                items: [],
+                currentPage: 1,
+                totalPages: 1,
+                totalItems: 0,
+                hasNextPage: false,
+                hasPreviousPage: false,
+              ));
 
-      final now = DateTime.now();
-      expect(
-        client.getHeadlinesByDateRange(
-          now.subtract(const Duration(days: 1)),
-          now,
-        ),
-        emits(testResponse),
-      );
-    });
-  });
-
-  group('HeadlinesClient stream lifecycle', () {
-    test('pauseAllStreams completes without error', () {
-      expect(() => client.pauseAllStreams(), returnsNormally);
-    });
-
-    test('resumeAllStreams completes without error', () {
-      expect(() => client.resumeAllStreams(), returnsNormally);
-    });
-
-    test('dispose completes successfully', () {
-      when(() => client.dispose()).thenAnswer((_) async {});
-      expect(client.dispose(), completes);
+      final response =
+          await client.getHeadlinesByDateRange(DateTime.now(), DateTime.now());
+      expect(response.items, isEmpty);
     });
   });
 }

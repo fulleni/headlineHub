@@ -164,60 +164,56 @@ abstract class HeadlinesClient {
   // CORE CRUD OPERATIONS
 
   /// Streams a paginated list of all headlines
-  Stream<PaginatedResponse> getHeadlines([
+  ///
+  /// Throws a [HeadlineCategoryException] if there's an error fetching headlines.
+  Future<PaginatedResponse<Headline>> getHeadlines([
     HeadlineQueryOptions? options,
   ]);
 
   /// Fetches a specific headline by ID
+  ///
+  /// Throws a [HeadlineNotFoundException] if the headline is not found.
   Future<Headline?> getHeadline(String id);
 
   /// Creates a new headline
+  ///
+  /// Throws a [HeadlineCreationException] if there's an error creating the headline.
   Future<Headline> createHeadline(Headline headline);
 
   /// Updates an existing headline
+  ///
+  /// Throws a [HeadlineUpdateException] if there's an error updating the headline.
   Future<Headline> updateHeadline(Headline headline);
 
   /// Deletes a headline by ID
+  ///
+  /// Throws a [HeadlineDeletionException] if there's an error deleting the headline.
   Future<void> deleteHeadline(String id);
 
   // SEARCH AND FILTER OPERATIONS
 
-  /// Streams headlines matching the query string
-  Stream<PaginatedResponse> getHeadlinesByQuery(
+  /// Headlines matching the query string
+  ///
+  /// Throws a [HeadlineSearchingException] if there's an error searching headlines.
+  Future<PaginatedResponse<Headline>> getHeadlinesByQuery(
     String query, [
     HeadlineQueryOptions? options,
   ]);
 
-  /// Streams headlines for a specific category
-  Stream<PaginatedResponse> getHeadlinesByCategory(
+  /// Headlines for a specific category
+  ///
+  /// Throws a [HeadlineCategoryException] if there's an error fetching headlines for the category.
+  Future<PaginatedResponse<Headline>> getHeadlinesByCategory(
     HeadlineCategory category, [
     HeadlineQueryOptions? options,
   ]);
 
-  /// Streams headlines within a date range
-  Stream<PaginatedResponse> getHeadlinesByDateRange(
+  /// Headlines within a date range
+  ///
+  /// Throws a [HeadlineDateRangeException] if there's an error fetching headlines for the date range.
+  Future<PaginatedResponse<Headline>> getHeadlinesByDateRange(
     DateTime startDate,
     DateTime endDate, [
     HeadlineQueryOptions? options,
   ]);
-
-  // STREAM LIFECYCLE CONTROL
-
-  /// Pauses all active streams
-  ///
-  /// Call this when the app goes to background to conserve resources
-  /// and prevent unnecessary network calls
-  void pauseAllStreams();
-
-  /// Resumes all previously paused streams
-  ///
-  /// Call this when the app returns to foreground to restore
-  /// real-time updates
-  void resumeAllStreams();
-
-  /// Cleanup resources when done
-  ///
-  /// Call this when the client is no longer needed
-  /// Cancels all active streams and releases resources
-  Future<void> dispose();
 }
