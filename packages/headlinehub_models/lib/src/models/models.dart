@@ -1,2 +1,4 @@
+export 'country.dart';
 export 'headline.dart';
-export 'headline_response.dart';
+export 'pagnated_response.dart';
+export 'source.dart';

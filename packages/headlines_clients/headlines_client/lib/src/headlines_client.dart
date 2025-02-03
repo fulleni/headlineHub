@@ -98,8 +98,6 @@ class HeadlineDateRangeException implements Exception {
       '$message${startDate != null ? ' ($startDate to $endDate)' : ''}';
 }
 
-
-
 /// Options for filtering and paginating headline results
 class HeadlineQueryOptions {
   /// Creates a new [HeadlineQueryOptions]
@@ -166,7 +164,7 @@ abstract class HeadlinesClient {
   // CORE CRUD OPERATIONS
 
   /// Streams a paginated list of all headlines
-  Stream<HeadlineResponse> getHeadlines([
+  Stream<PaginatedResponse> getHeadlines([
     HeadlineQueryOptions? options,
   ]);
 
@@ -185,19 +183,19 @@ abstract class HeadlinesClient {
   // SEARCH AND FILTER OPERATIONS
 
   /// Streams headlines matching the query string
-  Stream<HeadlineResponse> getHeadlinesByQuery(
+  Stream<PaginatedResponse> getHeadlinesByQuery(
     String query, [
     HeadlineQueryOptions? options,
   ]);
 
   /// Streams headlines for a specific category
-  Stream<HeadlineResponse> getHeadlinesByCategory(
+  Stream<PaginatedResponse> getHeadlinesByCategory(
     HeadlineCategory category, [
     HeadlineQueryOptions? options,
   ]);
 
   /// Streams headlines within a date range
-  Stream<HeadlineResponse> getHeadlinesByDateRange(
+  Stream<PaginatedResponse> getHeadlinesByDateRange(
     DateTime startDate,
     DateTime endDate, [
     HeadlineQueryOptions? options,
@@ -206,19 +204,19 @@ abstract class HeadlinesClient {
   // STREAM LIFECYCLE CONTROL
 
   /// Pauses all active streams
-  /// 
+  ///
   /// Call this when the app goes to background to conserve resources
   /// and prevent unnecessary network calls
   void pauseAllStreams();
 
   /// Resumes all previously paused streams
-  /// 
+  ///
   /// Call this when the app returns to foreground to restore
   /// real-time updates
   void resumeAllStreams();
 
   /// Cleanup resources when done
-  /// 
+  ///
   /// Call this when the client is no longer needed
   /// Cancels all active streams and releases resources
   Future<void> dispose();

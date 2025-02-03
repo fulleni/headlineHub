@@ -1,18 +1,39 @@
+import 'package:headlinehub_models/src/models/country.dart';
 import 'package:headlinehub_models/src/models/headline.dart';
+import 'package:headlinehub_models/src/models/language.dart';
+import 'package:headlinehub_models/src/models/source.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('Headline', () {
     final timestamp = DateTime(2023, 1, 1, 12, 0);
+    const country = Country(
+      code: 'US',
+      name: 'United States',
+      flagUrl: 'https://example.com/flag.jpg',
+    );
+    const language = Language(
+      code: 'en',
+      name: 'English',
+    );
+    const source = Source(
+      id: 'source-id',
+      name: 'Test Source',
+      description: 'Test Description',
+      url: 'https://example.com',
+      language: language,
+      country: country,
+    );
     final headline = Headline(
       id: 'test-id',
       title: 'Test Title',
       content: 'Test Content',
-      source: 'Test Source',
+      publishedBy: source,
       imageUrl: 'https://example.com/image.jpg',
       publishedAt: timestamp,
+      happenedIn: country,
+      language: language,
       category: HeadlineCategory.technology,
-      // ignore: avoid_redundant_argument_values
       isActive: true,
     );
 
@@ -21,9 +42,11 @@ void main() {
       expect(headline.id, equals('test-id'));
       expect(headline.title, equals('Test Title'));
       expect(headline.content, equals('Test Content'));
-      expect(headline.source, equals('Test Source'));
+      expect(headline.publishedBy, equals(source));
       expect(headline.imageUrl, equals('https://example.com/image.jpg'));
       expect(headline.publishedAt, equals(timestamp));
+      expect(headline.happenedIn, equals(country));
+      expect(headline.language, equals(language));
       expect(headline.category, equals(HeadlineCategory.technology));
       expect(headline.isActive, isTrue);
     });
@@ -36,11 +59,12 @@ void main() {
             id: 'test-id',
             title: 'Test Title',
             content: 'Test Content',
-            source: 'Test Source',
+            publishedBy: source,
             imageUrl: 'https://example.com/image.jpg',
             publishedAt: timestamp,
+            happenedIn: country,
+            language: language,
             category: HeadlineCategory.technology,
-            // ignore: avoid_redundant_argument_values
             isActive: true,
           ),
         ),

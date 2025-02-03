@@ -11,11 +11,10 @@ class FakeHeadline extends Fake implements Headline {}
 
 class FakeHeadlineQueryOptions extends Fake implements HeadlineQueryOptions {}
 
-
 void main() {
   late MockHeadlinesClient client;
   late Headline testHeadline;
-  late HeadlineResponse testResponse;
+  late PaginatedResponse testResponse;
 
   setUpAll(() {
     registerFallbackValue(FakeHeadline());
@@ -29,14 +28,14 @@ void main() {
       id: '1',
       title: 'Test Headline',
       content: 'Test Content',
-      source: 'Test Source',
-      imageUrl: 'https://example.com/image.jpg',
+      publishedBy: 'Test Source',
+      publishedIn: 'https://example.com/image.jpg',
       publishedAt: DateTime.now(),
       category: HeadlineCategory.technology,
       isActive: true,
     );
-    testResponse = HeadlineResponse(
-      headlines: [testHeadline],
+    testResponse = PaginatedResponse(
+      items: [testHeadline],
       paginationMetadata: const PaginationMetadata(
         currentPage: 1,
         totalPages: 1,

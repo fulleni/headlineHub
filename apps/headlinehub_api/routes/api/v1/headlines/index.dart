@@ -25,16 +25,16 @@ Future<Response> _handleGetHeadlines(RequestContext context) async {
       id: '1',
       title: 'Sample Headline',
       content: 'This is a sample headline content.',
-      source: 'HeadlineHub',
-      imageUrl: 'https://example.com/image.jpg',
+      publishedBy: 'HeadlineHub',
+      publishedIn: 'https://example.com/image.jpg',
       publishedAt: DateTime.now(),
       category: HeadlineCategory.technology,
     ),
   ];
 
   // Create response with pagination
-  final response = HeadlineResponse(
-    headlines: headlines,
+  final response = PaginatedResponse(
+    items: headlines,
     total: headlines.length,
     page: page,
     perPage: perPage,
