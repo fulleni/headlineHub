@@ -52,8 +52,9 @@ class HeadlineDeletionException implements Exception {
 /// Exception thrown when there's an error fetching headlines by category
 class HeadlineCategoryException implements Exception {
   /// Creates a new [HeadlineCategoryException]
-  const HeadlineCategoryException(
-      [this.message = 'Failed to fetch headlines for category']);
+  const HeadlineCategoryException([
+    this.message = 'Failed to fetch headlines for category',
+  ]);
 
   /// The error message
   final String message;
@@ -65,8 +66,9 @@ class HeadlineCategoryException implements Exception {
 /// Exception thrown when there's an error searching headlines
 class HeadlineSearchingException implements Exception {
   /// Creates a new [HeadlineSearchingException]
-  const HeadlineSearchingException(
-      [this.message = 'Failed to search headlines']);
+  const HeadlineSearchingException([
+    this.message = 'Failed to search headlines',
+  ]);
 
   /// The error message
   final String message;

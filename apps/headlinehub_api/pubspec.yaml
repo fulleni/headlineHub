@@ -8,10 +8,10 @@ environment:
 
 dependencies:
   dart_frog: ^1.1.0
-  headlinehub_models:
-    path: ../../packages/headlinehub_models
   headlines_client:
     path: ../../packages/headlines_clients/headlines_client
+  in_memory_headlines_client:
+    path: ../../packages/headlines_clients/in_memory_headlines_client
   json_annotation: ^4.8.1
 
 dev_dependencies:
