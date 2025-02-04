@@ -1,4 +1,4 @@
-name: headlines_client_repository
+name: headlines_repository
 description: Manages the headlines domain
 version: 0.1.0+1
 publish_to: none
@@ -6,7 +6,7 @@ publish_to: none
 environment:
   sdk: ^3.5.0
 
-dependencies: 
+dependencies:
   headlines_client:
     path: ../headlines_client
 

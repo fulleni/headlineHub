@@ -11,6 +11,7 @@ dependencies:
   in_memory_headlines_client:
     path: ../../packages/headlines_clients/in_memory_headlines_client
   json_annotation: ^4.8.1
+  shelf_cors_headers: ^0.1.5
 
 dev_dependencies:
   mocktail: ^1.0.3

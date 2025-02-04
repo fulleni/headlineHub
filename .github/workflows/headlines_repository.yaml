@@ -1,4 +1,4 @@
-name: headlines_client_repository
+name: headlines_repository
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -7,8 +7,8 @@ concurrency:
 on:
   pull_request:
     paths:
-      - "packages/headlines_client/headlines_client_repository/**"
-      - ".github/workflows/headlines_client_repository.yaml"
+      - "packages/headlines_client/headlines_repository/**"
+      - ".github/workflows/headlines_repository.yaml"
     branches:
       - main
 
@@ -19,4 +19,4 @@ jobs:
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
     with:
       flutter_version: 3.24.2
-      working_directory: packages/headlines_client/headlines_client_repository/
+      working_directory: packages/headlines_client/headlines_repository/

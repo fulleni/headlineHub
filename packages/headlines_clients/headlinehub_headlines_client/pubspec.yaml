@@ -1,4 +1,4 @@
-name: headlineshub_headlines_client
+name: headlinehub_headlines_client
 description: headlinHub API implementaion of the headlineClient abstract class
 version: 0.1.0+1
 publish_to: none
