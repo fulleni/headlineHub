@@ -6,6 +6,10 @@ publish_to: none
 environment:
   sdk: ^3.5.0
 
+dependencies: 
+  headlines_client:
+    path: ../headlines_client
+
 dev_dependencies:
   mocktail: ^1.0.4
   test: ^1.25.8

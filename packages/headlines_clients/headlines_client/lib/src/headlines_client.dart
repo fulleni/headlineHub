@@ -1,6 +1,5 @@
-import 'package:headlinehub_models/headlinehub_models.dart';
+import 'package:headlines_client/src/models/models.dart';
 
-// Keep only core exceptions
 /// Exception thrown when a headline is not found
 class HeadlineNotFoundException implements Exception {
   /// Creates a new [HeadlineNotFoundException]
