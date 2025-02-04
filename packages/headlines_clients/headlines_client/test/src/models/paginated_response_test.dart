@@ -1,6 +1,6 @@
 // ignore_for_file: lines_longer_than_80_chars
 
-import 'package:headlinehub_models/src/models/paginated_response.dart';
+import 'package:headlines_client/src/models/paginated_response.dart';
 import 'package:test/test.dart';
 
 void main() {

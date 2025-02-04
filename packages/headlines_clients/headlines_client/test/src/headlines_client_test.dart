@@ -1,6 +1,5 @@
 // ignore_for_file: lines_longer_than_80_chars
 
-import 'package:headlinehub_models/headlinehub_models.dart';
 import 'package:headlines_client/headlines_client.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -26,15 +25,16 @@ void main() {
     });
 
     test('getHeadlines returns empty list', () async {
-      when(() => client.getHeadlines(any()))
-          .thenAnswer((_) async => const PaginatedResponse<Headline>(
-                items: [],
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: 0,
-                hasNextPage: false,
-                hasPreviousPage: false,
-              ));
+      when(() => client.getHeadlines(any())).thenAnswer(
+        (_) async => const PaginatedResponse<Headline>(
+          items: [],
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        ),
+      );
 
       final response = await client.getHeadlines();
       expect(response.items, isEmpty);
@@ -59,16 +59,18 @@ void main() {
           url: 'https://test.com',
           language: Language(code: 'en', name: 'English'),
           country: Country(
-              code: 'US',
-              name: 'United States',
-              flagUrl: 'https://test.com/flag.png'),
+            code: 'US',
+            name: 'United States',
+            flagUrl: 'https://test.com/flag.png',
+          ),
         ),
         imageUrl: 'https://test.com/image.png',
         publishedAt: DateTime.now(),
         happenedIn: const Country(
-            code: 'US',
-            name: 'United States',
-            flagUrl: 'https://test.com/flag.png'),
+          code: 'US',
+          name: 'United States',
+          flagUrl: 'https://test.com/flag.png',
+        ),
         language: const Language(code: 'en', name: 'English'),
       );
 
@@ -91,16 +93,18 @@ void main() {
           url: 'https://test.com',
           language: Language(code: 'en', name: 'English'),
           country: Country(
-              code: 'US',
-              name: 'United States',
-              flagUrl: 'https://test.com/flag.png'),
+            code: 'US',
+            name: 'United States',
+            flagUrl: 'https://test.com/flag.png',
+          ),
         ),
         imageUrl: 'https://test.com/image.png',
         publishedAt: DateTime.now(),
         happenedIn: const Country(
-            code: 'US',
-            name: 'United States',
-            flagUrl: 'https://test.com/flag.png'),
+          code: 'US',
+          name: 'United States',
+          flagUrl: 'https://test.com/flag.png',
+        ),
         language: const Language(code: 'en', name: 'English'),
       );
 
@@ -118,30 +122,32 @@ void main() {
     });
 
     test('getHeadlinesByQuery returns empty list', () async {
-      when(() => client.getHeadlinesByQuery(any(), any()))
-          .thenAnswer((_) async => const PaginatedResponse<Headline>(
-                items: [],
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: 0,
-                hasNextPage: false,
-                hasPreviousPage: false,
-              ));
+      when(() => client.getHeadlinesByQuery(any(), any())).thenAnswer(
+        (_) async => const PaginatedResponse<Headline>(
+          items: [],
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        ),
+      );
 
       final response = await client.getHeadlinesByQuery('test');
       expect(response.items, isEmpty);
     });
 
     test('getHeadlinesByCategory returns empty list', () async {
-      when(() => client.getHeadlinesByCategory(any(), any()))
-          .thenAnswer((_) async => const PaginatedResponse<Headline>(
-                items: [],
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: 0,
-                hasNextPage: false,
-                hasPreviousPage: false,
-              ));
+      when(() => client.getHeadlinesByCategory(any(), any())).thenAnswer(
+        (_) async => const PaginatedResponse<Headline>(
+          items: [],
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        ),
+      );
 
       final response =
           await client.getHeadlinesByCategory(HeadlineCategory.general);
@@ -150,14 +156,16 @@ void main() {
 
     test('getHeadlinesByDateRange returns empty list', () async {
       when(() => client.getHeadlinesByDateRange(any(), any(), any()))
-          .thenAnswer((_) async => const PaginatedResponse<Headline>(
-                items: [],
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: 0,
-                hasNextPage: false,
-                hasPreviousPage: false,
-              ));
+          .thenAnswer(
+        (_) async => const PaginatedResponse<Headline>(
+          items: [],
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        ),
+      );
 
       final response =
           await client.getHeadlinesByDateRange(DateTime.now(), DateTime.now());

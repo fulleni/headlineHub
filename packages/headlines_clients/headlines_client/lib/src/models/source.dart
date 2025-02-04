@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:headlinehub_models/src/models/country.dart';
-import 'package:headlinehub_models/src/models/language.dart';
+import 'country.dart';
+import 'language.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'source.g.dart';

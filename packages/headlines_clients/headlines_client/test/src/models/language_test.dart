@@ -1,4 +1,4 @@
-import 'package:headlinehub_models/src/models/language.dart';
+import 'package:headlines_client/src/models/language.dart';
 import 'package:test/test.dart';
 
 void main() {

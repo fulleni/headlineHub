@@ -2,3 +2,4 @@
 library;
 
 export 'src/headlines_client.dart';
+export 'src/models/models.dart';
