@@ -1,6 +1,6 @@
 # 📰 HeadlineHub 📰
 
-Flutter-based mobile application that delivers personalized headlines. It includes an intuitive admin dashboard for efficient management and an API for fetching and updating the latest headlines content, ensuring users receive tailored and up-to date
+💙 Flutter mobile app that delivers personalized news headlines. It includes a robust web dashboard for content management, and a high-performance API.
 
 ## 🗺️ Project Overview
 
