@@ -1,6 +1,6 @@
-import 'package:headlinehub_models/src/models/country.dart';
-import 'package:headlinehub_models/src/models/language.dart';
-import 'package:headlinehub_models/src/models/source.dart';
+import 'package:headlines_client/src/models/country.dart';
+import 'package:headlines_client/src/models/language.dart';
+import 'package:headlines_client/src/models/source.dart';
 import 'package:test/test.dart';
 
 void main() {
