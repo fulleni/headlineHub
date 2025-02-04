@@ -1,0 +1,22 @@
+name: headlineshub_headlines_client
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    paths:
+      - "packages/headlines_client/headlineshub_headlines_client/**"
+      - ".github/workflows/headlineshub_headlines_client.yaml"
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      max-parallel: 1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    with:
+      flutter_version: 3.24.2
+      working_directory: packages/headlines_client/headlineshub_headlines_client/
