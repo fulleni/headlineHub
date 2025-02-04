@@ -166,7 +166,7 @@ abstract class HeadlinesClient {
 
   /// Streams a paginated list of all headlines
   ///
-  /// Throws a [HeadlineCategoryException] if there's an error fetching headlines.
+  /// Throws a [HeadlineSearchingException] if there's an error fetching headlines.
   Future<PaginatedResponse<Headline>> getHeadlines([
     HeadlineQueryOptions? options,
   ]);

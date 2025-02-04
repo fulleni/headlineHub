@@ -188,10 +188,10 @@ packages:
       relative: true
     source: path
     version: "0.1.0+1"
-  headlines_client_repository:
+  headlines_repository:
     dependency: "direct main"
     description:
-      path: "../../packages/headlines_clients/headlines_client_repository"
+      path: "../../packages/headlines_clients/headlines_repository"
       relative: true
     source: path
     version: "0.1.0+1"

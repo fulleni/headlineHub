@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'country.dart';
-import 'source.dart';
-import 'language.dart';
+import 'package:headlines_client/src/models/country.dart';
+import 'package:headlines_client/src/models/language.dart';
+import 'package:headlines_client/src/models/source.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'headline.g.dart';
