@@ -5,11 +5,11 @@ import 'dart:convert';
 import 'package:headlines_client/headlines_client.dart';
 import 'package:http/http.dart' as http;
 
-/// {@template headlinehub_headlines_client}
+/// {@template headlineshub_headlines_client}
 /// headlinHub API implementation of the [HeadlinesClient] abstract class
 /// {@endtemplate}
 class HeadlinehubHeadlinesClient extends HeadlinesClient {
-  /// {@macro headlinehub_headlines_client}
+  /// {@macro headlineshub_headlines_client}
   const HeadlinehubHeadlinesClient(this.baseUrl, this.httpClient);
 
   /// The base URL of the HeadlineHub API.
