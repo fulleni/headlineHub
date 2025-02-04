@@ -1,7 +1,5 @@
 // ignore_for_file: lines_longer_than_80_chars
 
-import 'package:headlinehub_models/headlinehub_models.dart';
-import 'package:headlines_client/headlines_client.dart';
 import 'package:in_memory_headlines_client/in_memory_headlines_client.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
