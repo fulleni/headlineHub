@@ -1,11 +1,10 @@
 // ignore_for_file: avoid_redundant_argument_values
 
-import 'package:headlinehub_models/headlinehub_models.dart';
 import 'package:headlines_client/headlines_client.dart';
 import 'package:in_memory_headlines_client/src/mock_data.dart';
 
 /// {@template in_memory_headlines_client}
-/// An in-memory implementation of the [HeadlinesClient] that uses 
+/// An in-memory implementation of the [HeadlinesClient] that uses
 /// a predefined list of headlines.
 /// {@endtemplate}
 class InMemoryHeadlinesClient extends HeadlinesClient {

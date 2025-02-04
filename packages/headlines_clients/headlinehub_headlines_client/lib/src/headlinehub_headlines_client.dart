@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 
-import 'package:headlinehub_models/headlinehub_models.dart';
 import 'package:headlines_client/headlines_client.dart';
 import 'package:http/http.dart' as http;
 
