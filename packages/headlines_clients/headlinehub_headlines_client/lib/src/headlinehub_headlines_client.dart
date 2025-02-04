@@ -18,6 +18,60 @@ class HeadlinehubHeadlinesClient extends HeadlinesClient {
   /// The HTTP client used to make requests.
   final http.Client httpClient;
 
+  List<Headline> _applyFilters(
+    List<Headline> headlines,
+    HeadlineQueryOptions? options,
+  ) {
+    var filteredHeadlines = headlines;
+
+    if (options != null) {
+      if (options.startDate != null) {
+        filteredHeadlines = filteredHeadlines
+            .where(
+              (headline) => headline.publishedAt.isAfter(options.startDate!),
+            )
+            .toList();
+      }
+      if (options.endDate != null) {
+        filteredHeadlines = filteredHeadlines
+            .where(
+              (headline) => headline.publishedAt.isBefore(options.endDate!),
+            )
+            .toList();
+      }
+      if (options.isActive != null) {
+        filteredHeadlines = filteredHeadlines
+            .where((headline) => headline.isActive == options.isActive)
+            .toList();
+      }
+      filteredHeadlines.sort((a, b) {
+        int comparison;
+        switch (options.sortBy) {
+          case HeadlineSortBy.title:
+            comparison = a.title.compareTo(b.title);
+          case HeadlineSortBy.source:
+            comparison = a.publishedBy.name.compareTo(b.publishedBy.name);
+          case HeadlineSortBy.publishedAt:
+            comparison = a.publishedAt.compareTo(b.publishedAt);
+        }
+        return options.sortDirection == SortDirection.ascending
+            ? comparison
+            : -comparison;
+      });
+
+      final startIndex = (options.page - 1) * options.limit;
+      final endIndex = startIndex + options.limit;
+      filteredHeadlines = filteredHeadlines.sublist(
+        startIndex,
+        endIndex > filteredHeadlines.length
+            ? filteredHeadlines.length
+            : endIndex,
+      );
+    }
+
+    return filteredHeadlines;
+  }
+
   @override
   Future<PaginatedResponse<Headline>> getHeadlines([
     HeadlineQueryOptions? options,
@@ -26,15 +80,146 @@ class HeadlinehubHeadlinesClient extends HeadlinesClient {
       final response = await httpClient.get(Uri.parse('$baseUrl/headlines'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return PaginatedResponse<Headline>.fromJson(
-          data,
-          (json) => Headline.fromJson(json! as Map<String, dynamic>),
+        var headlines = (data['items'] as List)
+            .map((json) => Headline.fromJson(json as Map<String, dynamic>))
+            .toList();
+
+        headlines = _applyFilters(headlines, options);
+
+        final totalItems = data['totalItems'] as int;
+        final totalPages = (totalItems / options!.limit).ceil();
+        final hasNextPage = options.page < totalPages;
+
+        return PaginatedResponse<Headline>(
+          items: headlines,
+          currentPage: options.page,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          hasNextPage: hasNextPage,
+          hasPreviousPage: options.page > 1,
         );
       } else {
         throw const HeadlineCategoryException('Failed to fetch headlines');
       }
     } catch (e) {
       throw const HeadlineCategoryException('Failed to fetch headlines');
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<Headline>> getHeadlinesByQuery(
+    String query, [
+    HeadlineQueryOptions? options,
+  ]) async {
+    try {
+      final response =
+          await httpClient.get(Uri.parse('$baseUrl/headlines?query=$query'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        var headlines = (data['items'] as List)
+            .map((json) => Headline.fromJson(json as Map<String, dynamic>))
+            .toList();
+        headlines = _applyFilters(headlines, options);
+
+        final totalItems = data['totalItems'] as int;
+        final totalPages = (totalItems / options!.limit).ceil();
+        final hasNextPage = options.page < totalPages;
+
+        return PaginatedResponse<Headline>(
+          items: headlines,
+          currentPage: options.page,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          hasNextPage: hasNextPage,
+          hasPreviousPage: options.page > 1,
+        );
+      } else {
+        throw const HeadlineSearchingException('Failed to search headlines');
+      }
+    } catch (e) {
+      throw const HeadlineSearchingException('Failed to search headlines');
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<Headline>> getHeadlinesByCategory(
+    HeadlineCategory category, [
+    HeadlineQueryOptions? options,
+  ]) async {
+    try {
+      final response = await httpClient
+          .get(Uri.parse('$baseUrl/headlines?category=${category.name}'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        var headlines = (data['items'] as List)
+            .map((json) => Headline.fromJson(json as Map<String, dynamic>))
+            .toList();
+        headlines = _applyFilters(headlines, options);
+
+        final totalItems = data['totalItems'] as int;
+        final totalPages = (totalItems / options!.limit).ceil();
+        final hasNextPage = options.page < totalPages;
+
+        return PaginatedResponse<Headline>(
+          items: headlines,
+          currentPage: options.page,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          hasNextPage: hasNextPage,
+          hasPreviousPage: options.page > 1,
+        );
+      } else {
+        throw const HeadlineCategoryException(
+          'Failed to fetch headlines for category',
+        );
+      }
+    } catch (e) {
+      throw const HeadlineCategoryException(
+        'Failed to fetch headlines for category',
+      );
+    }
+  }
+
+  @override
+  Future<PaginatedResponse<Headline>> getHeadlinesByDateRange(
+    DateTime startDate,
+    DateTime endDate, [
+    HeadlineQueryOptions? options,
+  ]) async {
+    try {
+      final response = await httpClient.get(
+        Uri.parse(
+          '$baseUrl/headlines?startDate=${startDate.toIso8601String()}&endDate=${endDate.toIso8601String()}',
+        ),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        var headlines = (data['items'] as List)
+            .map((json) => Headline.fromJson(json as Map<String, dynamic>))
+            .toList();
+        headlines = _applyFilters(headlines, options);
+
+        final totalItems = data['totalItems'] as int;
+        final totalPages = (totalItems / options!.limit).ceil();
+        final hasNextPage = options.page < totalPages;
+
+        return PaginatedResponse<Headline>(
+          items: headlines,
+          currentPage: options.page,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          hasNextPage: hasNextPage,
+          hasPreviousPage: options.page > 1,
+        );
+      } else {
+        throw const HeadlineDateRangeException(
+          'Failed to fetch headlines for date range',
+        );
+      }
+    } catch (e) {
+      throw const HeadlineDateRangeException(
+        'Failed to fetch headlines for date range',
+      );
     }
   }
 
@@ -106,84 +291,6 @@ class HeadlinehubHeadlinesClient extends HeadlinesClient {
       }
     } catch (e) {
       throw const HeadlineDeletionException('Failed to delete headline');
-    }
-  }
-
-  @override
-  Future<PaginatedResponse<Headline>> getHeadlinesByQuery(
-    String query, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      final response =
-          await httpClient.get(Uri.parse('$baseUrl/headlines?query=$query'));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return PaginatedResponse<Headline>.fromJson(
-          data,
-          (json) => Headline.fromJson(json! as Map<String, dynamic>),
-        );
-      } else {
-        throw const HeadlineSearchingException('Failed to search headlines');
-      }
-    } catch (e) {
-      throw const HeadlineSearchingException('Failed to search headlines');
-    }
-  }
-
-  @override
-  Future<PaginatedResponse<Headline>> getHeadlinesByCategory(
-    HeadlineCategory category, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      final response = await httpClient
-          .get(Uri.parse('$baseUrl/headlines?category=${category.name}'));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return PaginatedResponse<Headline>.fromJson(
-          data,
-          (json) => Headline.fromJson(json! as Map<String, dynamic>),
-        );
-      } else {
-        throw const HeadlineCategoryException(
-          'Failed to fetch headlines for category',
-        );
-      }
-    } catch (e) {
-      throw const HeadlineCategoryException(
-        'Failed to fetch headlines for category',
-      );
-    }
-  }
-
-  @override
-  Future<PaginatedResponse<Headline>> getHeadlinesByDateRange(
-    DateTime startDate,
-    DateTime endDate, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      final response = await httpClient.get(
-        Uri.parse(
-          '$baseUrl/headlines?startDate=${startDate.toIso8601String()}&endDate=${endDate.toIso8601String()}',
-        ),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return PaginatedResponse<Headline>.fromJson(
-          data,
-          (json) => Headline.fromJson(json! as Map<String, dynamic>),
-        );
-      } else {
-        throw const HeadlineDateRangeException(
-          'Failed to fetch headlines for date range',
-        );
-      }
-    } catch (e) {
-      throw const HeadlineDateRangeException(
-        'Failed to fetch headlines for date range',
-      );
     }
   }
 }

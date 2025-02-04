@@ -264,4 +264,30 @@ final List<Headline> headlines = [
     ),
     language: const Language(code: 'en', name: 'English'),
   ),
+  Headline(
+    id: 'headline_11',
+    title: 'War Breakthrough: New Warzone',
+    content:
+        'Warriors have made a groundbreaking discovery that could change our understanding of the universe.',
+    publishedBy: const Source(
+      id: 'source_11',
+      name: 'Scientific North Korean',
+      description: 'Advancing science and technology',
+      url: 'https://www.scientificamerican.com',
+      language: Language(code: 'en', name: 'English'),
+      country: Country(
+        code: 'NK',
+        name: 'North Korea',
+        flagUrl: 'https://www.scientificamerican.com/flag.png',
+      ),
+    ),
+    imageUrl: 'https://www.scientificamerican.com/image.png',
+    publishedAt: DateTime.now().subtract(const Duration(days: 10)),
+    happenedIn: const Country(
+      code: 'NK',
+      name: 'North Korea',
+      flagUrl: 'https://www.scientificamerican.com/flag.png',
+    ),
+    language: const Language(code: 'en', name: 'English'),
+  ),
 ];

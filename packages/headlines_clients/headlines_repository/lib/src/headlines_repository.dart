@@ -1,11 +1,11 @@
 import 'package:headlines_client/headlines_client.dart';
 
-/// {@template headlines_client_repository}
+/// {@template headlines_repository}
 /// Manages the headlines domain
 /// {@endtemplate}
-class HeadlinesClientRepository {
-  /// {@macro headlines_client_repository}
-  const HeadlinesClientRepository(this.client);
+class HeadlinesRepository {
+  /// {@macro headlines_repository}
+  const HeadlinesRepository(this.client);
 
   /// The headlines client
   final HeadlinesClient client;
@@ -39,7 +39,7 @@ class HeadlinesClientRepository {
     }
   }
 
-  /// Updates an existing headline  
+  /// Updates an existing headline
   Future<Headline> updateHeadline(Headline headline) async {
     try {
       return await client.updateHeadline(headline);
