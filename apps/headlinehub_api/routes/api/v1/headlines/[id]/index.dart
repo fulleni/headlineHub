@@ -9,7 +9,7 @@ Future<Response> onRequest(RequestContext context, String id) async {
     return Response(statusCode: HttpStatus.methodNotAllowed);
   }
 
-  final client = InMemoryHeadlinesClient();
+  final client = context.read<InMemoryHeadlinesClient>();
 
   try {
     final headline = await client.getHeadline(id);
