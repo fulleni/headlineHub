@@ -21,7 +21,7 @@ Future<Response> onRequest(RequestContext context) async {
 }
 
 Future<Response> _handleGetHeadlines(RequestContext context) async {
-  final client = InMemoryHeadlinesClient();
+  final client = context.read<InMemoryHeadlinesClient>();
 
   try {
     // Get query parameters for pagination and filtering
@@ -95,7 +95,7 @@ Future<Response> _handleGetHeadlines(RequestContext context) async {
 }
 
 Future<Response> _handleCreateHeadline(RequestContext context) async {
-  final client = InMemoryHeadlinesClient();
+  final client = context.read<InMemoryHeadlinesClient>();
 
   try {
     final body = await context.request.json() as Map<String, dynamic>;
@@ -120,7 +120,7 @@ Future<Response> _handleCreateHeadline(RequestContext context) async {
 }
 
 Future<Response> _handleUpdateHeadline(RequestContext context) async {
-  final client = InMemoryHeadlinesClient();
+  final client = context.read<InMemoryHeadlinesClient>();
 
   try {
     final body = await context.request.json() as Map<String, dynamic>;
@@ -149,7 +149,7 @@ Future<Response> _handleUpdateHeadline(RequestContext context) async {
 }
 
 Future<Response> _handleDeleteHeadline(RequestContext context) async {
-  final client = InMemoryHeadlinesClient();
+  final client = context.read<InMemoryHeadlinesClient>();
 
   try {
     final id = context.request.uri.queryParameters['id'];
@@ -171,36 +171,6 @@ Future<Response> _handleDeleteHeadline(RequestContext context) async {
   } on HeadlineDeletionException catch (e) {
     return Response.json(
       statusCode: HttpStatus.badRequest,
-      body: {'error': e.message},
-    );
-  } catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.internalServerError,
-      body: {'error': 'An unexpected error occurred'},
-    );
-  }
-}
-
-Future<Response> _handleGetHeadline(RequestContext context) async {
-  final client = InMemoryHeadlinesClient();
-
-  try {
-    final id = context.request.uri.queryParameters['id'];
-    if (id == null) {
-      return Response.json(
-        statusCode: HttpStatus.badRequest,
-        body: {'error': 'ID is required'},
-      );
-    }
-
-    final headline = await client.getHeadline(id);
-
-    return Response.json(
-      body: headline?.toJson(),
-    );
-  } on HeadlineNotFoundException catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.notFound,
       body: {'error': e.message},
     );
   } catch (e) {
