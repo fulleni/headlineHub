@@ -13,10 +13,10 @@ dependencies:
   flutter_bloc: ^8.1.6
   flutter_localizations:
     sdk: flutter
-  headlinehub_models:
-    path: ../../packages/headlinehub_models
   headlines_client:
     path: ../../packages/headlines_clients/headlines_client
+  headlines_client_repository:
+    path: ../../packages/headlines_clients/headlines_client_repository
   intl: ^0.19.0
 
 dev_dependencies:

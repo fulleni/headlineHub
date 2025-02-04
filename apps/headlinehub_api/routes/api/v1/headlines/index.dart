@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:dart_frog/dart_frog.dart';
-import 'package:headlines_client/headlines_client.dart';
 import 'package:in_memory_headlines_client/in_memory_headlines_client.dart';
 
 Future<Response> onRequest(RequestContext context) async {

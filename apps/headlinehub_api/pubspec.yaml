@@ -1,5 +1,5 @@
 name: headlinehub_api
-description: A new Dart Frog application
+description:  API for the HeadlineHub app and dashboard
 version: 1.0.0+1
 publish_to: none
 
@@ -8,8 +8,6 @@ environment:
 
 dependencies:
   dart_frog: ^1.1.0
-  headlines_client:
-    path: ../../packages/headlines_clients/headlines_client
   in_memory_headlines_client:
     path: ../../packages/headlines_clients/in_memory_headlines_client
   json_annotation: ^4.8.1

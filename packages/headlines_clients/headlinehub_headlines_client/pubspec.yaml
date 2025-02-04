@@ -7,8 +7,6 @@ environment:
   sdk: ^3.5.0
 
 dependencies:
-  headlinehub_models:
-    path: ../../headlinehub_models
   headlines_client:
     path: ../headlines_client
   http: ^1.3.0

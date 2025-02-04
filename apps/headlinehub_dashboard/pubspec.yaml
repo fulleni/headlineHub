@@ -1,5 +1,5 @@
 name: headlinehub_dashboard
-description: A Flutter Web Application for Managing the HeadlineHub app
+description: Web Dashboard for Managing the HeadlineHub mobile app
 version: 1.0.0+1
 publish_to: none
 
@@ -13,10 +13,10 @@ dependencies:
   flutter_bloc: ^8.1.6
   flutter_localizations:
     sdk: flutter
-  headlinehub_models:
-    path: ../../packages/headlinehub_models
   headlines_client:
     path: ../../packages/headlines_clients/headlines_client
+  headlines_client_repository:
+    path: ../../packages/headlines_clients/headlines_client_repository
   intl: ^0.19.0
 
 dev_dependencies:
