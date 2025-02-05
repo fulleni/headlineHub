@@ -25,8 +25,6 @@ class HeadlinesFeedBloc extends Bloc<HeadlinesFeedEvent, HeadlinesFeedState> {
     emit(state.copyWith(status: HeadlinesFeedStatus.loading));
     try {
       final options = HeadlineQueryOptions(
-        // calculates the current page number based
-        // on the total number of headlines
         page: (state.headlines.length ~/ event.limit) + 1,
         limit: event.limit,
       );

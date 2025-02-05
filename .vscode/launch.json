@@ -13,13 +13,15 @@
             "name": "headlinehub_api",
             "cwd": "apps\\headlinehub_api",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "program": "lib/main.dart"
         },
         {
             "name": "headlinehub_app",
             "cwd": "apps\\headlinehub_app",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "program": "lib/main.dart"
         },
         {
             "name": "headlinehub_app (profile mode)",
