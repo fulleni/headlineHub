@@ -27,30 +27,21 @@ class _HeadlinesFeedView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Headlines')),
-      body: BlocListener<HeadlinesFeedBloc, HeadlinesFeedState>(
-        listener: (context, state) {
-          if (state.status == HeadlinesFeedStatus.failure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Failed to fetch headlines')),
+      body: BlocBuilder<HeadlinesFeedBloc, HeadlinesFeedState>(
+        builder: (context, state) {
+          if (state.status == HeadlinesFeedStatus.initial) {
+            return const _LoadingView();
+          } else if (state.status == HeadlinesFeedStatus.success ||
+              state.status == HeadlinesFeedStatus.loading) {
+            return _SuccessView(
+              headlines: state.headlines,
+              hasNextPage: state.hasNextPage,
+              isLoading: state.status == HeadlinesFeedStatus.loading,
             );
+          } else {
+            return const _FailureView();
           }
         },
-        child: BlocBuilder<HeadlinesFeedBloc, HeadlinesFeedState>(
-          builder: (context, state) {
-            if (state.status == HeadlinesFeedStatus.initial) {
-              return const _LoadingView();
-            } else if (state.status == HeadlinesFeedStatus.success ||
-                state.status == HeadlinesFeedStatus.loading) {
-              return _SuccessView(
-                headlines: state.headlines,
-                hasNextPage: state.hasNextPage,
-                isLoading: state.status == HeadlinesFeedStatus.loading,
-              );
-            } else {
-              return const _FailureView();
-            }
-          },
-        ),
       ),
     );
   }

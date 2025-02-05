@@ -6,7 +6,7 @@ sealed class HeadlinesFeedEvent {
 }
 
 final class HeadlinesFetchRequested extends HeadlinesFeedEvent {
-  const HeadlinesFetchRequested({this.limit = 9});
+  const HeadlinesFetchRequested({this.limit = 10});
 
   final int limit;
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:headlinehub_app/app/bloc/app_bloc.dart';
-import 'package:headlinehub_app/counter/counter.dart';
 import 'package:headlinehub_app/headlines_feed/view/headlines_feed_page.dart';
 import 'package:headlinehub_app/l10n/l10n.dart';
 import 'package:headlines_repository/headlines_repository.dart';
