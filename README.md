@@ -53,6 +53,6 @@ A single license covers all three (app, dashboard, and API).
 
 ---
 **Questions?** 
-Feel free to join the [discussions](https://github.com/fulleni/headlinehub/discussions) and I will be happy to help.
+Feel free to join the [discussions](https://github.com/fulleni/headlinehub/discussions).
 
 
