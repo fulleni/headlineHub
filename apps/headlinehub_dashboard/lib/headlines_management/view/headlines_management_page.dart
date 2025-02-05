@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:headlinehub_dashboard/headlines_management/bloc/headlines_management_bloc.dart';
+import 'package:headlinehub_dashboard/headlines_management/view/headline_creation_page.dart';
+import 'package:headlinehub_dashboard/headlines_management/view/headline_update_page.dart';
 import 'package:headlines_repository/headlines_repository.dart';
 
 /// A page that enable managing headlines.
@@ -34,27 +36,60 @@ class _HeadlinesManagementView extends StatelessWidget {
           _AddHeadlineButton(),
         ],
       ),
-      body: Column(
-        children: [
-          _SearchBar(),
-          _Filters(),
-          Expanded(
-            child:
-                BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
-              builder: (context, state) {
-                if (state.status == HeadlinesManagementStatus.loading) {
-                  return const _LoadingView();
-                } else if (state.status == HeadlinesManagementStatus.failure) {
-                  return const _FailureView();
-                } else if (state.status == HeadlinesManagementStatus.success) {
-                  return const _SuccessView();
-                } else {
-                  return const SizedBox.shrink();
-                }
-              },
-            ),
-          ),
-        ],
+      body: BlocListener<HeadlinesManagementBloc, HeadlinesManagementState>(
+        listener: (context, state) {
+          if (state.createStatus == HeadlinesManagementStatus.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Headline created successfully',
+                ),
+              ),
+            );
+          }
+
+          if (state.createStatus == HeadlinesManagementStatus.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Headline creation failed ',
+                ),
+              ),
+            );
+          }
+          if (state.updateStatus == HeadlinesManagementStatus.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Headline updated successfully',
+                ),
+              ),
+            );
+          }
+
+          if (state.updateStatus == HeadlinesManagementStatus.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Headline update failed ',
+                ),
+              ),
+            );
+          }
+        },
+        child: BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
+          builder: (context, state) {
+            if (state.fetchStatus == HeadlinesManagementStatus.loading) {
+              return const _LoadingView();
+            } else if (state.fetchStatus == HeadlinesManagementStatus.failure) {
+              return const _FailureView();
+            } else if (state.fetchStatus == HeadlinesManagementStatus.success) {
+              return const _SuccessView();
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
       ),
     );
   }
@@ -110,9 +145,9 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8),
       child: TextField(
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           hintText: 'Search...',
           border: OutlineInputBorder(),
           suffixIcon: Icon(Icons.search),
@@ -132,12 +167,12 @@ class _Filters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8),
       child: Row(
         children: [
           _DropdownFilter(
             label: 'Source',
-            items: ['Source A', 'Source B', 'Source C'],
+            items: const ['Source A', 'Source B', 'Source C'],
             onChanged: (value) {
               // Handle source filter change
             },
@@ -157,7 +192,7 @@ class _Filters extends StatelessWidget {
           ),
           _DropdownFilter(
             label: 'Status',
-            items: ['Published', 'Draft'],
+            items: const ['Published', 'Draft'],
             onChanged: (value) {
               // Handle status filter change
             },
@@ -192,17 +227,19 @@ class _DropdownFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         child: DropdownButtonFormField<String>(
           decoration: InputDecoration(
             labelText: label,
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
           items: items
-              .map((item) => DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
-                  ))
+              .map(
+                (item) => DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item),
+                ),
+              )
               .toList(),
           onChanged: onChanged,
         ),
@@ -225,7 +262,7 @@ class _DatePickerFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         child: ElevatedButton(
           onPressed: () async {
             final dateRange = await showDateRangePicker(
@@ -248,55 +285,163 @@ class _DatePickerFilter extends StatelessWidget {
 class _HeadlineTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
-      builder: (context, state) {
-        if (state.status == HeadlinesManagementStatus.loading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state.status == HeadlinesManagementStatus.failure) {
-          return const Center(child: Text('Failed to fetch headlines'));
-        } else if (state.status == HeadlinesManagementStatus.success) {
-          return SingleChildScrollView(
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Title')),
-                DataColumn(label: Text('Source')),
-                DataColumn(label: Text('Category')),
-                DataColumn(label: Text('Published At')),
-                DataColumn(label: Text('Status')),
-                DataColumn(label: Text('Actions')),
-              ],
-              rows: state.headlines.map((headline) {
-                return DataRow(cells: [
-                  DataCell(Text(headline.title)),
-                  DataCell(Text(headline.publishedBy.name)),
-                  DataCell(Text(headline.category.name)),
-                  DataCell(Text(headline.publishedAt.toIso8601String())),
-                  DataCell(Text(headline.isActive ? 'Published' : 'Draft')),
-                  DataCell(Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          // Handle edit action
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          context
-                              .read<HeadlinesManagementBloc>()
-                              .add(HeadlineDeleteRequested(headline.id));
-                        },
-                      ),
-                    ],
-                  )),
-                ]);
-              }).toList(),
-            ),
-          );
-        } else {
-          return const SizedBox.shrink();
+    final state = context.read<HeadlinesManagementBloc>().state;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const middleColumnWidthWidth = 80.0;
+        var edgeColumnWidth =
+            (constraints.maxWidth - (middleColumnWidthWidth * 4)) / 2;
+        final isMobile = constraints.maxWidth < 600;
+
+        if (isMobile) {
+          edgeColumnWidth = constraints.maxWidth / 2;
         }
+        return SingleChildScrollView(
+          child: DataTable(
+            columns: [
+              DataColumn(
+                label: SizedBox(
+                  width: edgeColumnWidth,
+                  child: const Text(
+                    'Title',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              if (!isMobile)
+                const DataColumn(
+                  label: SizedBox(
+                    width: middleColumnWidthWidth,
+                    child: Text(
+                      'Source',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              if (!isMobile)
+                const DataColumn(
+                  label: SizedBox(
+                    width: middleColumnWidthWidth,
+                    child: Text(
+                      'Category',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              if (!isMobile)
+                const DataColumn(
+                  label: SizedBox(
+                    width: middleColumnWidthWidth,
+                    child: Text(
+                      'Published At',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              if (!isMobile)
+                const DataColumn(
+                  label: SizedBox(
+                    width: middleColumnWidthWidth,
+                    child: Text(
+                      'Status',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              DataColumn(
+                label: SizedBox(
+                  width: edgeColumnWidth,
+                  child: const Text(
+                    'Actions',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+            rows: state.headlines.map((headline) {
+              return DataRow(
+                cells: [
+                  DataCell(
+                    SizedBox(
+                      width: edgeColumnWidth,
+                      child: Text(
+                        headline.title,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  if (!isMobile)
+                    DataCell(
+                      SizedBox(
+                        width: middleColumnWidthWidth,
+                        child: Text(
+                          headline.publishedBy.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  if (!isMobile)
+                    DataCell(
+                      SizedBox(
+                        width: middleColumnWidthWidth,
+                        child: Text(
+                          headline.category.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  if (!isMobile)
+                    DataCell(
+                      SizedBox(
+                        width: middleColumnWidthWidth,
+                        child: Text(
+                          headline.publishedAt.toIso8601String(),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  if (!isMobile)
+                    DataCell(
+                      SizedBox(
+                        width: middleColumnWidthWidth,
+                        child: Text(
+                          headline.isActive ? 'Published' : 'Draft',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  DataCell(
+                    SizedBox(
+                      width: edgeColumnWidth,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<bool>(
+                                builder: (context) => HeadlineUpdatePage(
+                                  headline: headline,
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              context.read<HeadlinesManagementBloc>().add(
+                                    HeadlineDeleteRequested(headline.id),
+                                  );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        );
       },
     );
   }
@@ -309,7 +454,7 @@ class _Pagination extends StatelessWidget {
     return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
       builder: (context, state) {
         return Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -319,7 +464,6 @@ class _Pagination extends StatelessWidget {
                         context.read<HeadlinesManagementBloc>().add(
                               HeadlinesFetchRequested(
                                 page: state.currentPage - 1,
-                                limit: state.headlines.length,
                               ),
                             );
                       }
@@ -333,7 +477,6 @@ class _Pagination extends StatelessWidget {
                         context.read<HeadlinesManagementBloc>().add(
                               HeadlinesFetchRequested(
                                 page: state.currentPage + 1,
-                                limit: state.headlines.length,
                               ),
                             );
                       }
@@ -356,21 +499,20 @@ class _ItemsPerPageDropdown extends StatelessWidget {
     return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
       builder: (context, state) {
         return DropdownButton<int>(
-          value: state.headlines.length,
-          items: [5, 10, 20, 40, 60]
-              .map((value) => DropdownMenuItem<int>(
-                    value: value,
-                    child: Text('$value items per page'),
-                  ))
+          value: state.perPage,
+          items: [5, 10, 20, 40]
+              .map(
+                (value) => DropdownMenuItem<int>(
+                  value: value,
+                  child: Text('$value items per page'),
+                ),
+              )
               .toList(),
           onChanged: (value) {
             if (value != null) {
-              context.read<HeadlinesManagementBloc>().add(
-                    HeadlinesFetchRequested(
-                      page: 1,
-                      limit: value,
-                    ),
-                  );
+              context
+                  .read<HeadlinesManagementBloc>()
+                  .add(HeadlinesPerPageUpdated(value));
             }
           },
         );
@@ -384,10 +526,15 @@ class _AddHeadlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: ElevatedButton.icon(
         onPressed: () {
-          // Handle add headline action
+          Navigator.of(context).push(
+            // ignore: inference_failure_on_instance_creation
+            MaterialPageRoute(
+              builder: (context) => const HeadlineCreationPage(),
+            ),
+          );
         },
         icon: const Icon(Icons.add),
         label: const Text('Add Headline'),

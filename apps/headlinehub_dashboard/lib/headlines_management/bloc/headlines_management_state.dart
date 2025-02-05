@@ -8,16 +8,23 @@ enum HeadlinesManagementStatus { initial, loading, success, failure }
 class HeadlinesManagementState {
   /// Creates a new [HeadlinesManagementState] instance.
   const HeadlinesManagementState({
-    this.status = HeadlinesManagementStatus.initial,
+    this.fetchStatus = HeadlinesManagementStatus.initial,
+    this.createStatus = HeadlinesManagementStatus.initial,
+    this.updateStatus = HeadlinesManagementStatus.initial,
+    this.deleteStatus = HeadlinesManagementStatus.initial,
     this.headlines = const [],
     this.hasNextPage = false,
     this.headline,
     this.currentPage = 1,
     this.totalPages = 1,
+    this.perPage = 5,
   });
 
   /// The current status of the headlines management page.
-  final HeadlinesManagementStatus status;
+  final HeadlinesManagementStatus fetchStatus;
+  final HeadlinesManagementStatus createStatus;
+  final HeadlinesManagementStatus updateStatus;
+  final HeadlinesManagementStatus deleteStatus;
 
   /// The list of headlines.
   final List<Headline> headlines;
@@ -34,23 +41,34 @@ class HeadlinesManagementState {
   /// The total number of pages of headlines.
   final int totalPages;
 
-  /// Creates a copy of this [HeadlinesManagementState] with the given 
+  /// nuumber of headlines to fetch and show.
+  final int perPage;
+
+  /// Creates a copy of this [HeadlinesManagementState] with the given
   /// fields replaced with new values.
   HeadlinesManagementState copyWith({
-    HeadlinesManagementStatus? status,
+    HeadlinesManagementStatus? fetchStatus,
+    HeadlinesManagementStatus? createStatus,
+    HeadlinesManagementStatus? updateStatus,
+    HeadlinesManagementStatus? deleteStatus,
     List<Headline>? headlines,
     bool? hasNextPage,
     Headline? headline,
     int? currentPage,
     int? totalPages,
+    int? perPage,
   }) {
     return HeadlinesManagementState(
-      status: status ?? this.status,
+      fetchStatus: fetchStatus ?? this.fetchStatus,
+      createStatus: createStatus ?? this.createStatus,
+      updateStatus: updateStatus ?? this.updateStatus,
+      deleteStatus: deleteStatus ?? this.deleteStatus,
       headlines: headlines ?? this.headlines,
       hasNextPage: hasNextPage ?? this.hasNextPage,
       headline: headline ?? this.headline,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
+      perPage: perPage ?? this.perPage,
     );
   }
 }
