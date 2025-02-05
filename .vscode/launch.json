@@ -1,21 +1,6 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "headlineHub",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "headlinehub_api",
-            "cwd": "apps\\headlinehub_api",
-            "request": "launch",
-            "type": "dart",
-            "program": "lib/main.dart"
-        },
         {
             "name": "headlinehub_app",
             "cwd": "apps\\headlinehub_app",
@@ -24,62 +9,12 @@
             "program": "lib/main.dart"
         },
         {
-            "name": "headlinehub_app (profile mode)",
-            "cwd": "apps\\headlinehub_app",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "headlinehub_app (release mode)",
-            "cwd": "apps\\headlinehub_app",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
             "name": "headlinehub_dashboard",
             "cwd": "apps\\headlinehub_dashboard",
             "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "headlinehub_dashboard (profile mode)",
-            "cwd": "apps\\headlinehub_dashboard",
-            "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "program": "lib/main.dart"
         },
-        {
-            "name": "headlinehub_dashboard (release mode)",
-            "cwd": "apps\\headlinehub_dashboard",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "headlinehub_headlines_client",
-            "cwd": "packages\\headlines_clients\\headlinehub_headlines_client",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "headlines_client",
-            "cwd": "packages\\headlines_clients\\headlines_client",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "headlines_repository",
-            "cwd": "packages\\headlines_clients\\headlines_repository",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "in_memory_headlines_client",
-            "cwd": "packages\\headlines_clients\\in_memory_headlines_client",
-            "request": "launch",
-            "type": "dart"
-        }
+        
     ]
 }
