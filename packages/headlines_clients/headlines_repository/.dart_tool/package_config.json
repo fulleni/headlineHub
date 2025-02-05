@@ -326,13 +326,13 @@
       "languageVersion": "3.4"
     },
     {
-      "name": "headlines_client_repository",
+      "name": "headlines_repository",
       "rootUri": "../",
       "packageUri": "lib/",
       "languageVersion": "3.5"
     }
   ],
-  "generated": "2025-02-04T08:36:08.882180Z",
+  "generated": "2025-02-05T08:01:49.448478Z",
   "generator": "pub",
   "generatorVersion": "3.6.1",
   "flutterRoot": "file:///C:/Users/fulle/dev/flutter",

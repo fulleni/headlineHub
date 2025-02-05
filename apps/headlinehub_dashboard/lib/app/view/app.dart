@@ -1,9 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:headlinehub_dashboard/counter/counter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:headlinehub_dashboard/app/bloc/app_bloc.dart';
+import 'package:headlinehub_dashboard/headlines_management/view/headlines_management_page.dart';
 import 'package:headlinehub_dashboard/l10n/l10n.dart';
+import 'package:headlines_repository/headlines_repository.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({
+    required this.headlinesRepository,
+    super.key,
+  });
+
+  final HeadlinesRepository headlinesRepository;
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider.value(
+          value: headlinesRepository,
+        ),
+      ],
+      child: BlocProvider(
+        create: (context) => AppBloc(),
+        child: const _AppView(),
+      ),
+    );
+  }
+}
+
+class _AppView extends StatelessWidget {
+  const _AppView();
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +43,7 @@ class App extends StatelessWidget {
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const CounterPage(),
+      home: const HeadlinesManagementPage(),
     );
   }
 }
