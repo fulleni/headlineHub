@@ -4,7 +4,7 @@ import 'package:headlinehub_dashboard/headlines_management/bloc/headlines_manage
 import 'package:headlines_repository/headlines_repository.dart';
 
 class HeadlineUpdatePage extends StatelessWidget {
-  const HeadlineUpdatePage({super.key, required this.headline});
+  const HeadlineUpdatePage({required this.headline, super.key});
 
   final Headline headline;
 
@@ -28,9 +28,14 @@ class _HeadlineUpdateView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Update Headline')),
       body: BlocListener<HeadlinesManagementBloc, HeadlinesManagementState>(
-        listenWhen: (previous, current) =>
-            current.updateStatus == HeadlinesManagementStatus.loading,
-        listener: (context, state) => Navigator.of(context).pop(),
+        listener: (context, state) {
+          if (state.updateStatus == HeadlinesManagementStatus.failure) {
+            Navigator.of(context).pop(false);
+          }
+          if (state.updateStatus == HeadlinesManagementStatus.success) {
+            Navigator.of(context).pop(true);
+          }
+        },
         child: _HeadlineEditForm(
           headline: headline,
         ),

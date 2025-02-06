@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:headlinehub_dashboard/headlines_management/bloc/headlines_management_bloc.dart';
-import 'package:headlinehub_dashboard/headlines_management/view/headline_creation_page.dart';
+import 'package:headlinehub_dashboard/headlines_management/view/headline_create_page.dart';
 import 'package:headlinehub_dashboard/headlines_management/view/headline_update_page.dart';
 import 'package:headlines_repository/headlines_repository.dart';
 
@@ -36,60 +36,20 @@ class _HeadlinesManagementView extends StatelessWidget {
           _AddHeadlineButton(),
         ],
       ),
-      body: BlocListener<HeadlinesManagementBloc, HeadlinesManagementState>(
-        listener: (context, state) {
-          if (state.createStatus == HeadlinesManagementStatus.success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Headline created successfully',
-                ),
-              ),
+      body: BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
+        builder: (context, state) {
+          if (state.fetchStatus == HeadlinesManagementStatus.loading) {
+            return const _LoadingView();
+          } else if (state.fetchStatus == HeadlinesManagementStatus.failure) {
+            return const _FailureView();
+          } else if (state.fetchStatus == HeadlinesManagementStatus.success) {
+            return _SuccessView(
+              headlines: state.headlines,
             );
-          }
-
-          if (state.createStatus == HeadlinesManagementStatus.failure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Headline creation failed ',
-                ),
-              ),
-            );
-          }
-          if (state.updateStatus == HeadlinesManagementStatus.success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Headline updated successfully',
-                ),
-              ),
-            );
-          }
-
-          if (state.updateStatus == HeadlinesManagementStatus.failure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Headline update failed ',
-                ),
-              ),
-            );
+          } else {
+            return const SizedBox.shrink();
           }
         },
-        child: BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
-          builder: (context, state) {
-            if (state.fetchStatus == HeadlinesManagementStatus.loading) {
-              return const _LoadingView();
-            } else if (state.fetchStatus == HeadlinesManagementStatus.failure) {
-              return const _FailureView();
-            } else if (state.fetchStatus == HeadlinesManagementStatus.success) {
-              return const _SuccessView();
-            } else {
-              return const SizedBox.shrink();
-            }
-          },
-        ),
       ),
     );
   }
@@ -114,7 +74,9 @@ class _FailureView extends StatelessWidget {
 }
 
 class _SuccessView extends StatelessWidget {
-  const _SuccessView();
+  const _SuccessView({required this.headlines});
+
+  final List<Headline> headlines;
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +91,7 @@ class _SuccessView extends StatelessWidget {
             SliverToBoxAdapter(
               child: SizedBox(
                 height: tableHeight,
-                child: _HeadlineTable(),
+                child: _HeadlineTable(headlines: headlines),
               ),
             ),
             SliverToBoxAdapter(child: _Pagination()),
@@ -283,9 +245,12 @@ class _DatePickerFilter extends StatelessWidget {
 
 /// A table that displays the headlines.
 class _HeadlineTable extends StatelessWidget {
+  const _HeadlineTable({required this.headlines});
+
+  final List<Headline> headlines;
+
   @override
   Widget build(BuildContext context) {
-    final state = context.read<HeadlinesManagementBloc>().state;
     return LayoutBuilder(
       builder: (context, constraints) {
         const middleColumnWidthWidth = 80.0;
@@ -358,7 +323,7 @@ class _HeadlineTable extends StatelessWidget {
                 ),
               ),
             ],
-            rows: state.headlines.map((headline) {
+            rows: headlines.map((headline) {
               return DataRow(
                 cells: [
                   DataCell(
@@ -417,13 +382,29 @@ class _HeadlineTable extends StatelessWidget {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.edit),
-                            onPressed: () => Navigator.of(context).push(
-                              MaterialPageRoute<bool>(
-                                builder: (context) => HeadlineUpdatePage(
-                                  headline: headline,
+                            onPressed: () async {
+                              final result =
+                                  await Navigator.of(context).push<bool>(
+                                MaterialPageRoute<bool>(
+                                  builder: (context) => HeadlineUpdatePage(
+                                    headline: headline,
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                              if (!context.mounted) return;
+                              if (result == false) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    showCloseIcon: true,
+                                    content: Text('Headline update failed'),
+                                  ),
+                                );
+                              } else {
+                                context
+                                    .read<HeadlinesManagementBloc>()
+                                    .add(const HeadlinesFetchRequested());
+                              }
+                            },
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete),
@@ -510,9 +491,9 @@ class _ItemsPerPageDropdown extends StatelessWidget {
               .toList(),
           onChanged: (value) {
             if (value != null) {
-              context
-                  .read<HeadlinesManagementBloc>()
-                  .add(HeadlinesPerPageUpdated(value));
+              context.read<HeadlinesManagementBloc>()
+                ..add(HeadlinesPerPageUpdated(value))
+                ..add(const HeadlinesFetchRequested());
             }
           },
         );
@@ -527,17 +508,28 @@ class _AddHeadlineButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: ElevatedButton.icon(
-        onPressed: () {
-          Navigator.of(context).push(
-            // ignore: inference_failure_on_instance_creation
-            MaterialPageRoute(
-              builder: (context) => const HeadlineCreationPage(),
+      child: IconButton(
+        onPressed: () async {
+          final result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute<bool>(
+              builder: (context) => const HeadlineCreatePage(),
             ),
           );
+          if (!context.mounted) return;
+          if (result == false) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                showCloseIcon: true,
+                content: Text('Headline creation failed'),
+              ),
+            );
+          } else {
+            context
+                .read<HeadlinesManagementBloc>()
+                .add(const HeadlinesFetchRequested());
+          }
         },
         icon: const Icon(Icons.add),
-        label: const Text('Add Headline'),
       ),
     );
   }

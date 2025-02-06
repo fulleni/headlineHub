@@ -3,30 +3,35 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:headlinehub_dashboard/headlines_management/bloc/headlines_management_bloc.dart';
 import 'package:headlines_repository/headlines_repository.dart';
 
-class HeadlineCreationPage extends StatelessWidget {
-  const HeadlineCreationPage({super.key});
+class HeadlineCreatePage extends StatelessWidget {
+  const HeadlineCreatePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
           HeadlinesManagementBloc(context.read<HeadlinesRepository>()),
-      child: const _HeadlineCreationView(),
+      child: const _HeadlineCreateView(),
     );
   }
 }
 
-class _HeadlineCreationView extends StatelessWidget {
-  const _HeadlineCreationView();
+class _HeadlineCreateView extends StatelessWidget {
+  const _HeadlineCreateView();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Create Headline')),
       body: BlocListener<HeadlinesManagementBloc, HeadlinesManagementState>(
-        listenWhen: (previous, current) =>
-            current.createStatus == HeadlinesManagementStatus.loading,
-        listener: (context, state) => Navigator.of(context).pop(),
+        listener: (context, state) {
+          if (state.createStatus == HeadlinesManagementStatus.failure) {
+            Navigator.of(context).pop(false);
+          }
+          if (state.createStatus == HeadlinesManagementStatus.success) {
+            Navigator.of(context).pop(true);
+          }
+        },
         child: const _HeadlineCreationForm(),
       ),
     );
