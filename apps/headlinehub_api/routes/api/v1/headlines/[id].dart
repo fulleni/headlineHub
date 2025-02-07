@@ -30,6 +30,11 @@ Future<Response> _handleGetHeadline(RequestContext context, String id) async {
     }
 
     return Response.json(body: headline.toJson());
+  } on HeadlineNotFoundException catch (e) {
+    return Response.json(
+      statusCode: HttpStatus.notFound,
+      body: {'error': e.message},
+    );
   } catch (e) {
     return Response.json(
       statusCode: HttpStatus.internalServerError,
@@ -54,6 +59,16 @@ Future<Response> _handleUpdateHeadline(
 
     final updatedHeadline = await client.updateHeadline(headline);
     return Response.json(body: updatedHeadline.toJson());
+  } on HeadlineNotFoundException catch (e) {
+    return Response.json(
+      statusCode: HttpStatus.notFound,
+      body: {'error': e.message},
+    );
+  } on HeadlineUpdateException catch (e) {
+    return Response.json(
+      statusCode: HttpStatus.badRequest,
+      body: {'error': e.message},
+    );
   } catch (e) {
     return Response.json(
       statusCode: HttpStatus.internalServerError,
