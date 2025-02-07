@@ -23,7 +23,7 @@ Future<Response> _handleGetHeadlines(RequestContext context) async {
     final params = context.request.uri.queryParameters;
     final page = int.tryParse(params['page'] ?? '1') ?? 1;
     final limit = int.tryParse(params['limit'] ?? '20') ?? 20;
-    final query = params['query'];
+    final query = params['query']?.toLowerCase();
     final category = params['category'];
     final startDate = params['startDate'] != null
         ? DateTime.tryParse(params['startDate']!)
@@ -41,8 +41,21 @@ Future<Response> _handleGetHeadlines(RequestContext context) async {
 
     PaginatedResponse<Headline> response;
 
-    if (query != null) {
-      response = await client.getHeadlinesByQuery(query, options);
+    if (query != null && query.isNotEmpty) {
+      final allHeadlines = await client.getHeadlines(options);
+      final filteredHeadlines = allHeadlines.items.where((headline) =>
+          headline.title.toLowerCase().contains(query) ||
+          headline.content.toLowerCase().contains(query) ||
+          headline.publishedBy.name.toLowerCase().contains(query)).toList();
+
+      response = PaginatedResponse<Headline>(
+        items: filteredHeadlines,
+        currentPage: page,
+        totalPages: (filteredHeadlines.length / limit).ceil(),
+        totalItems: filteredHeadlines.length,
+        hasNextPage: filteredHeadlines.length > page * limit,
+        hasPreviousPage: page > 1,
+      );
     } else if (category != null) {
       response = await client.getHeadlinesByCategory(
         HeadlineCategory.values.firstWhere(

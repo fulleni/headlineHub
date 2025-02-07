@@ -186,20 +186,29 @@ class HeadlinesManagementBloc
     emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
     try {
       final options = HeadlineQueryOptions(
-        page: (state.headlines.length ~/ state.perPage) + 1,
+        page: 1,  // Reset to first page for new search
         limit: state.perPage,
+        sortBy: state.sortBy,
+        sortDirection: state.sortDirection,
       );
-      final headlines =
-          await headlinesRepository.getHeadlinesByQuery(event.query, options);
-      emit(
-        state.copyWith(
-          fetchStatus: HeadlinesManagementStatus.success,
-          headlines: List.of(state.headlines)..addAll(headlines.items),
-          hasNextPage: headlines.hasNextPage,
-        ),
+      
+      final headlines = await headlinesRepository.getHeadlinesByQuery(
+        event.query,
+        options,
       );
+      
+      emit(state.copyWith(
+        fetchStatus: HeadlinesManagementStatus.success,
+        headlines: headlines.items,
+        currentPage: headlines.currentPage,
+        totalPages: headlines.totalPages,
+        hasNextPage: headlines.hasNextPage,
+      ));
     } catch (_) {
-      emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(
+        fetchStatus: HeadlinesManagementStatus.failure,
+        headlines: [],
+      ));
     }
   }
 
