@@ -17,7 +17,7 @@ class HeadlinesManagementState {
     this.headline,
     this.currentPage = 1,
     this.totalPages = 1,
-    this.perPage = 5,
+    this.perPage = 10,
     this.sortBy = HeadlineSortBy.publishedAt,
     this.sortDirection = SortDirection.descending,
   });

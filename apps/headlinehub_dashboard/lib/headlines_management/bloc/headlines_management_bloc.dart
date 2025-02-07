@@ -119,12 +119,21 @@ class HeadlinesManagementBloc
     emit(state.copyWith(deleteStatus: HeadlinesManagementStatus.loading));
     try {
       await headlinesRepository.deleteHeadline(event.id);
-      final updatedHeadlines =
-          state.headlines.where((headline) => headline.id != event.id).toList();
+      // Refresh the headlines list after successful deletion
+      final options = HeadlineQueryOptions(
+        page: state.currentPage,
+        limit: state.perPage,
+        sortBy: state.sortBy,
+        sortDirection: state.sortDirection,
+      );
+      final headlines = await headlinesRepository.getHeadlines(options);
       emit(
         state.copyWith(
           deleteStatus: HeadlinesManagementStatus.success,
-          headlines: updatedHeadlines,
+          fetchStatus: HeadlinesManagementStatus.success,
+          headlines: headlines.items,
+          hasNextPage: headlines.hasNextPage,
+          totalPages: (headlines.totalItems / state.perPage).ceil(),
         ),
       );
     } catch (_) {

@@ -39,7 +39,6 @@ class _HeadlinesManagementView extends StatelessWidget {
       ),
       body: BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
         builder: (context, state) {
-          print('REBUILDING _HeadlinesManagementView');
           if (state.fetchStatus == HeadlinesManagementStatus.loading) {
             return const _LoadingView();
           } else if (state.fetchStatus == HeadlinesManagementStatus.failure) {
@@ -82,16 +81,47 @@ class _SuccessView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: SizedBox(
-            // height: tableHeight,
+    return BlocListener<HeadlinesManagementBloc, HeadlinesManagementState>(
+      listenWhen: (previous, current) =>
+          previous.deleteStatus != current.deleteStatus,
+      listener: (context, state) {
+        if (state.deleteStatus == HeadlinesManagementStatus.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Headline deleted successfully'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        } else if (state.deleteStatus == HeadlinesManagementStatus.failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to delete headline'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+      child: Column(
+        children: [
+          Expanded(
             child: _HeadlineTable(headlines: headlines),
           ),
-        ),
-        SliverToBoxAdapter(child: _Pagination()),
-      ],
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: _Pagination(),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -107,157 +137,229 @@ class _HeadlineTable extends StatelessWidget {
     return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
       builder: (context, state) {
         return SingleChildScrollView(
-          child: DataTable(
-            showBottomBorder: true,
-            sortColumnIndex: state.sortBy.index,
-            sortAscending: state.sortDirection == SortDirection.ascending,
-            columns: [
-              DataColumn(
-                label: const Text('Title'),
-                onSort: (_, __) => _onSort(
-                  context,
-                  HeadlineSortBy.title,
-                  state.sortBy == HeadlineSortBy.title &&
-                          state.sortDirection == SortDirection.ascending
-                      ? SortDirection.descending
-                      : SortDirection.ascending,
+          scrollDirection: Axis.horizontal,
+          child: SingleChildScrollView(
+            child: DataTable(
+              showBottomBorder: true,
+              sortColumnIndex: state.sortBy.index,
+              sortAscending: state.sortDirection == SortDirection.ascending,
+              columns: [
+                DataColumn(
+                  label: Container(
+                    width: 200,
+                    child: const Text('Title'),
+                  ),
+                  tooltip: 'Sort by title',
+                  onSort: (columnIndex, ascending) =>
+                      context.read<HeadlinesManagementBloc>().add(
+                            HeadlinesSortRequested(
+                              sortBy: HeadlineSortBy.title,
+                              sortDirection:
+                                  state.sortDirection == SortDirection.ascending
+                                      ? SortDirection.descending
+                                      : SortDirection.ascending,
+                            ),
+                          ),
                 ),
-              ),
-              DataColumn(
-                label: const Text('Source'),
-                onSort: (_, __) => _onSort(
-                  context,
-                  HeadlineSortBy.source,
-                  state.sortBy == HeadlineSortBy.source &&
-                          state.sortDirection == SortDirection.ascending
-                      ? SortDirection.descending
-                      : SortDirection.ascending,
+                DataColumn(
+                  label: Container(
+                    width: 150,
+                    child: const Text('Source'),
+                  ),
+                  tooltip: 'Sort by source',
+                  onSort: (columnIndex, ascending) =>
+                      context.read<HeadlinesManagementBloc>().add(
+                            HeadlinesSortRequested(
+                              sortBy: HeadlineSortBy.source,
+                              sortDirection:
+                                  state.sortDirection == SortDirection.ascending
+                                      ? SortDirection.descending
+                                      : SortDirection.ascending,
+                            ),
+                          ),
                 ),
-              ),
-              DataColumn(
-                label: const Text('Category'),
-                onSort: (_, __) => _onSort(
-                  context,
-                  HeadlineSortBy.category,
-                  state.sortBy == HeadlineSortBy.category &&
-                          state.sortDirection == SortDirection.ascending
-                      ? SortDirection.descending
-                      : SortDirection.ascending,
+                DataColumn(
+                  label: Container(
+                    width: 120,
+                    child: const Text('Category'),
+                  ),
+                  tooltip: 'Sort by category',
+                  onSort: (columnIndex, ascending) =>
+                      context.read<HeadlinesManagementBloc>().add(
+                            HeadlinesSortRequested(
+                              sortBy: HeadlineSortBy.category,
+                              sortDirection:
+                                  state.sortDirection == SortDirection.ascending
+                                      ? SortDirection.descending
+                                      : SortDirection.ascending,
+                            ),
+                          ),
                 ),
-              ),
-              DataColumn(
-                label: const Text('Published At'),
-                onSort: (_, __) => _onSort(
-                  context,
-                  HeadlineSortBy.publishedAt,
-                  state.sortBy == HeadlineSortBy.publishedAt &&
-                          state.sortDirection == SortDirection.ascending
-                      ? SortDirection.descending
-                      : SortDirection.ascending,
+                DataColumn(
+                  label: Container(
+                    width: 120,
+                    child: const Text('Published'),
+                  ),
+                  tooltip: 'Sort by publication date',
+                  onSort: (columnIndex, ascending) =>
+                      context.read<HeadlinesManagementBloc>().add(
+                            HeadlinesSortRequested(
+                              sortBy: HeadlineSortBy.publishedAt,
+                              sortDirection:
+                                  state.sortDirection == SortDirection.ascending
+                                      ? SortDirection.descending
+                                      : SortDirection.ascending,
+                            ),
+                          ),
                 ),
-              ),
-              DataColumn(
-                label: const Text('Status'),
-                onSort: (_, __) => _onSort(
-                  context,
-                  HeadlineSortBy.status,
-                  state.sortBy == HeadlineSortBy.status &&
-                          state.sortDirection == SortDirection.ascending
-                      ? SortDirection.descending
-                      : SortDirection.ascending,
+                DataColumn(
+                  label: Container(
+                    width: 100,
+                    child: const Text('Status'),
+                  ),
+                  tooltip: 'Sort by status',
+                  onSort: (columnIndex, ascending) =>
+                      context.read<HeadlinesManagementBloc>().add(
+                            HeadlinesSortRequested(
+                              sortBy: HeadlineSortBy.status,
+                              sortDirection:
+                                  state.sortDirection == SortDirection.ascending
+                                      ? SortDirection.descending
+                                      : SortDirection.ascending,
+                            ),
+                          ),
                 ),
-              ),
-              const DataColumn(
-                label: Text('Actions'),
-              ),
-            ],
-            rows: headlines.map((headline) {
-              return DataRow(
-                cells: [
-                  DataCell(
-                    SizedBox(
-                      child: Text(
-                        headline.title,
-                        overflow: TextOverflow.ellipsis,
+                DataColumn(
+                  label: Container(
+                    width: 120,
+                    child: const Text('Actions'),
+                  ),
+                ),
+              ],
+              rows: headlines.map((headline) {
+                return DataRow(
+                  cells: [
+                    DataCell(
+                      Container(
+                        width: 200,
+                        child: Text(
+                          headline.title,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
-                  ),
-                  DataCell(
-                    SizedBox(
-                      child: Text(
-                        headline.publishedBy.name,
-                        overflow: TextOverflow.ellipsis,
+                    DataCell(
+                      Container(
+                        width: 150,
+                        child: Text(
+                          headline.publishedBy.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
-                  ),
-                  DataCell(
-                    SizedBox(
-                      child: Text(
-                        headline.category.name,
-                        overflow: TextOverflow.ellipsis,
+                    DataCell(
+                      Container(
+                        width: 120,
+                        child: Text(
+                          headline.category.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
-                  ),
-                  DataCell(
-                    SizedBox(
-                      child: Text(
-                        headline.publishedAt.toIso8601String(),
-                        overflow: TextOverflow.ellipsis,
+                    DataCell(
+                      Container(
+                        width: 120,
+                        child: Tooltip(
+                          message: headline.publishedAt.toIso8601String(),
+                          child: Text(
+                            '${headline.publishedAt.day}/${headline.publishedAt.month}/${headline.publishedAt.year}',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  DataCell(
-                    SizedBox(
-                      child: Text(
-                        headline.isActive ? 'Published' : 'Draft',
-                        overflow: TextOverflow.ellipsis,
+                    DataCell(
+                      Container(
+                        width: 100,
+                        child: Text(
+                          headline.isActive ? 'Published' : 'Draft',
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
-                  ),
-                  DataCell(
-                    SizedBox(
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () async {
-                              final result = await Navigator.of(context).push<bool>(
-                                MaterialPageRoute<bool>(
-                                  builder: (context) => HeadlineUpdatePage(
-                                    headline: headline,
-                                  ),
-                                ),
-                              );
-                              if (!context.mounted) return;
-                              if (result == false) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    showCloseIcon: true,
-                                    content: Text('Headline update failed'),
+                    DataCell(
+                      Container(
+                        width: 120,
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () async {
+                                final result =
+                                    await Navigator.of(context).push<bool>(
+                                  MaterialPageRoute<bool>(
+                                    builder: (context) => HeadlineUpdatePage(
+                                      headline: headline,
+                                    ),
                                   ),
                                 );
-                              } else {
-                                context
-                                    .read<HeadlinesManagementBloc>()
-                                    .add(const HeadlinesFetchRequested());
-                              }
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              context.read<HeadlinesManagementBloc>().add(
-                                    HeadlineDeleteRequested(headline.id),
+                                if (!context.mounted) return;
+                                if (result == false) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      showCloseIcon: true,
+                                      content: Text('Headline update failed'),
+                                    ),
                                   );
-                            },
-                          ),
-                        ],
+                                } else {
+                                  context
+                                      .read<HeadlinesManagementBloc>()
+                                      .add(const HeadlinesFetchRequested());
+                                }
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Delete Headline'),
+                                    content: const Text(
+                                      'Are you sure you want to delete this headline?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          context
+                                              .read<HeadlinesManagementBloc>()
+                                              .add(HeadlineDeleteRequested(
+                                                  headline.id));
+                                        },
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red,
+                                        ),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            }).toList(),
+                  ],
+                );
+              }).toList(),
+            ),
           ),
         );
       },
@@ -331,7 +433,7 @@ class _ItemsPerPageDropdown extends StatelessWidget {
       builder: (context, state) {
         return DropdownButton<int>(
           value: state.perPage,
-          items: [5, 10, 20, 40]
+          items: [10, 20, 40]
               .map(
                 (value) => DropdownMenuItem<int>(
                   value: value,
