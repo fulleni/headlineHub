@@ -33,8 +33,9 @@ class _HeadlinesManagementView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Headlines'),
         actions: [
-          const _SearchButton(),
           _AddHeadlineButton(),
+          const _SearchButton(),
+          const _RefreshButton(),
         ],
       ),
       body: BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
@@ -501,6 +502,23 @@ class _SearchButton extends StatelessWidget {
   }
 }
 
+class _RefreshButton extends StatelessWidget {
+  const _RefreshButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.refresh),
+      tooltip: 'Refresh headlines',
+      onPressed: () {
+        context
+            .read<HeadlinesManagementBloc>()
+            .add(const HeadlinesFetchRequested());
+      },
+    );
+  }
+}
+
 class HeadlinesSearchDelegate extends SearchDelegate<String> {
   HeadlinesSearchDelegate(this.bloc);
 
@@ -531,6 +549,7 @@ class HeadlinesSearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     bloc.add(HeadlinesFetchByQueryRequested(query));
+    close(context, '');
     return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
       bloc: bloc,
       builder: (context, state) {
