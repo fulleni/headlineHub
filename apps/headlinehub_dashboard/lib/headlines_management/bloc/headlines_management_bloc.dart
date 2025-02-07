@@ -18,8 +18,10 @@ class HeadlinesManagementBloc
     on<HeadlinesFetchByQueryRequested>(_onHeadlinesFetchByQueryRequested);
     on<HeadlinesFetchByCategoryRequested>(_onHeadlinesFetchByCategoryRequested);
     on<HeadlinesFetchByDateRangeRequested>(
-      _onHeadlinesFetchByDateRangeRequested,
-    );
+        _onHeadlinesFetchByDateRangeRequested);
+    on<HeadlinesPerPageUpdated>(_onHeadlinesPerPageUpdated);
+    on<HeadlinesSortRequested>(_onHeadlinesSortRequested);
+    on<HeadlineUndoDeleteRequested>(_onHeadlineUndoDeleteRequested);
   }
 
   final HeadlinesRepository headlinesRepository;
@@ -31,25 +33,25 @@ class HeadlinesManagementBloc
     HeadlinesFetchRequested event,
     Emitter<HeadlinesManagementState> emit,
   ) async {
-    if (state.status == HeadlinesManagementStatus.loading) return;
-    emit(state.copyWith(status: HeadlinesManagementStatus.loading));
+    if (state.fetchStatus == HeadlinesManagementStatus.loading) return;
+    emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
     try {
       final options = HeadlineQueryOptions(
         page: event.page,
-        limit: event.limit,
+        limit: state.perPage,
       );
       final headlines = await headlinesRepository.getHeadlines(options);
       emit(
         state.copyWith(
-          status: HeadlinesManagementStatus.success,
+          fetchStatus: HeadlinesManagementStatus.success,
           headlines: headlines.items,
           hasNextPage: headlines.hasNextPage,
           currentPage: event.page,
-          totalPages: (headlines.totalItems / event.limit).ceil(),
+          totalPages: (headlines.totalItems / state.perPage).ceil(),
         ),
       );
     } catch (_) {
-      emit(state.copyWith(status: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.failure));
     }
   }
 
@@ -57,17 +59,17 @@ class HeadlinesManagementBloc
     HeadlineFetchByIdRequested event,
     Emitter<HeadlinesManagementState> emit,
   ) async {
-    emit(state.copyWith(status: HeadlinesManagementStatus.loading));
+    emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
     try {
       final headline = await headlinesRepository.getHeadline(event.id);
       emit(
         state.copyWith(
-          status: HeadlinesManagementStatus.success,
+          fetchStatus: HeadlinesManagementStatus.success,
           headline: headline,
         ),
       );
     } catch (_) {
-      emit(state.copyWith(status: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.failure));
     }
   }
 
@@ -75,17 +77,17 @@ class HeadlinesManagementBloc
     HeadlineCreateRequested event,
     Emitter<HeadlinesManagementState> emit,
   ) async {
-    emit(state.copyWith(status: HeadlinesManagementStatus.loading));
+    emit(state.copyWith(createStatus: HeadlinesManagementStatus.loading));
     try {
       final headline = await headlinesRepository.createHeadline(event.headline);
       emit(
         state.copyWith(
-          status: HeadlinesManagementStatus.success,
+          createStatus: HeadlinesManagementStatus.success,
           headlines: List.of(state.headlines)..add(headline),
         ),
       );
     } catch (_) {
-      emit(state.copyWith(status: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(createStatus: HeadlinesManagementStatus.failure));
     }
   }
 
@@ -93,7 +95,7 @@ class HeadlinesManagementBloc
     HeadlineUpdateRequested event,
     Emitter<HeadlinesManagementState> emit,
   ) async {
-    emit(state.copyWith(status: HeadlinesManagementStatus.loading));
+    emit(state.copyWith(updateStatus: HeadlinesManagementStatus.loading));
     try {
       final updatedHeadline =
           await headlinesRepository.updateHeadline(event.headline);
@@ -102,12 +104,12 @@ class HeadlinesManagementBloc
       }).toList();
       emit(
         state.copyWith(
-          status: HeadlinesManagementStatus.success,
+          updateStatus: HeadlinesManagementStatus.success,
           headlines: updatedHeadlines,
         ),
       );
     } catch (_) {
-      emit(state.copyWith(status: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(updateStatus: HeadlinesManagementStatus.failure));
     }
   }
 
@@ -115,19 +117,65 @@ class HeadlinesManagementBloc
     HeadlineDeleteRequested event,
     Emitter<HeadlinesManagementState> emit,
   ) async {
-    emit(state.copyWith(status: HeadlinesManagementStatus.loading));
+    emit(state.copyWith(deleteStatus: HeadlinesManagementStatus.loading));
     try {
+      // Store the headline before deleting it
+      final deletedHeadline =
+          state.headlines.firstWhere((h) => h.id == event.id);
       await headlinesRepository.deleteHeadline(event.id);
-      final updatedHeadlines =
-          state.headlines.where((headline) => headline.id != event.id).toList();
+
+      final options = HeadlineQueryOptions(
+        page: state.currentPage,
+        limit: state.perPage,
+        sortBy: state.sortBy,
+        sortDirection: state.sortDirection,
+      );
+      final headlines = await headlinesRepository.getHeadlines(options);
       emit(
         state.copyWith(
-          status: HeadlinesManagementStatus.success,
-          headlines: updatedHeadlines,
+          deleteStatus: HeadlinesManagementStatus.success,
+          fetchStatus: HeadlinesManagementStatus.success,
+          headlines: headlines.items,
+          hasNextPage: headlines.hasNextPage,
+          totalPages: (headlines.totalItems / state.perPage).ceil(),
+          deletedHeadline: deletedHeadline,
         ),
       );
     } catch (_) {
-      emit(state.copyWith(status: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(
+        deleteStatus: HeadlinesManagementStatus.failure,
+        deletedHeadline: null,
+      ));
+    }
+  }
+
+  Future<void> _onHeadlineUndoDeleteRequested(
+    HeadlineUndoDeleteRequested event,
+    Emitter<HeadlinesManagementState> emit,
+  ) async {
+    if (state.deletedHeadline == null) return;
+
+    try {
+      final restoredHeadline = await headlinesRepository.createHeadline(
+        state.deletedHeadline!,
+      );
+
+      final options = HeadlineQueryOptions(
+        page: state.currentPage,
+        limit: state.perPage,
+        sortBy: state.sortBy,
+        sortDirection: state.sortDirection,
+      );
+      final headlines = await headlinesRepository.getHeadlines(options);
+
+      emit(state.copyWith(
+        headlines: headlines.items,
+        deletedHeadline: null,
+        hasNextPage: headlines.hasNextPage,
+        totalPages: (headlines.totalItems / state.perPage).ceil(),
+      ));
+    } catch (_) {
+      emit(state.copyWith(deletedHeadline: null));
     }
   }
 
@@ -135,23 +183,32 @@ class HeadlinesManagementBloc
     HeadlinesFetchByQueryRequested event,
     Emitter<HeadlinesManagementState> emit,
   ) async {
-    emit(state.copyWith(status: HeadlinesManagementStatus.loading));
+    emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
     try {
       final options = HeadlineQueryOptions(
-        page: (state.headlines.length ~/ event.limit) + 1,
-        limit: event.limit,
+        page: 1, // Reset to first page for new search
+        limit: state.perPage,
+        sortBy: state.sortBy,
+        sortDirection: state.sortDirection,
       );
-      final headlines =
-          await headlinesRepository.getHeadlinesByQuery(event.query, options);
-      emit(
-        state.copyWith(
-          status: HeadlinesManagementStatus.success,
-          headlines: List.of(state.headlines)..addAll(headlines.items),
-          hasNextPage: headlines.hasNextPage,
-        ),
+
+      final headlines = await headlinesRepository.getHeadlinesByQuery(
+        event.query,
+        options,
       );
+
+      emit(state.copyWith(
+        fetchStatus: HeadlinesManagementStatus.success,
+        headlines: headlines.items,
+        currentPage: headlines.currentPage,
+        totalPages: headlines.totalPages,
+        hasNextPage: headlines.hasNextPage,
+      ));
     } catch (_) {
-      emit(state.copyWith(status: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(
+        fetchStatus: HeadlinesManagementStatus.failure,
+        headlines: [],
+      ));
     }
   }
 
@@ -159,11 +216,11 @@ class HeadlinesManagementBloc
     HeadlinesFetchByCategoryRequested event,
     Emitter<HeadlinesManagementState> emit,
   ) async {
-    emit(state.copyWith(status: HeadlinesManagementStatus.loading));
+    emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
     try {
       final options = HeadlineQueryOptions(
-        page: (state.headlines.length ~/ event.limit) + 1,
-        limit: event.limit,
+        page: (state.headlines.length ~/ state.perPage) + 1,
+        limit: state.perPage,
       );
       final headlines = await headlinesRepository.getHeadlinesByCategory(
         event.category,
@@ -171,13 +228,13 @@ class HeadlinesManagementBloc
       );
       emit(
         state.copyWith(
-          status: HeadlinesManagementStatus.success,
+          fetchStatus: HeadlinesManagementStatus.success,
           headlines: List.of(state.headlines)..addAll(headlines.items),
           hasNextPage: headlines.hasNextPage,
         ),
       );
     } catch (_) {
-      emit(state.copyWith(status: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.failure));
     }
   }
 
@@ -185,11 +242,11 @@ class HeadlinesManagementBloc
     HeadlinesFetchByDateRangeRequested event,
     Emitter<HeadlinesManagementState> emit,
   ) async {
-    emit(state.copyWith(status: HeadlinesManagementStatus.loading));
+    emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
     try {
       final options = HeadlineQueryOptions(
-        page: (state.headlines.length ~/ event.limit) + 1,
-        limit: event.limit,
+        page: (state.headlines.length ~/ state.perPage) + 1,
+        limit: state.perPage,
         startDate: event.startDate,
         endDate: event.endDate,
       );
@@ -200,13 +257,46 @@ class HeadlinesManagementBloc
       );
       emit(
         state.copyWith(
-          status: HeadlinesManagementStatus.success,
+          fetchStatus: HeadlinesManagementStatus.success,
           headlines: List.of(state.headlines)..addAll(headlines.items),
           hasNextPage: headlines.hasNextPage,
         ),
       );
     } catch (_) {
-      emit(state.copyWith(status: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.failure));
+    }
+  }
+
+  void _onHeadlinesPerPageUpdated(
+    HeadlinesPerPageUpdated event,
+    Emitter<HeadlinesManagementState> emit,
+  ) =>
+      emit(state.copyWith(perPage: event.perPage));
+
+  Future<void> _onHeadlinesSortRequested(
+    HeadlinesSortRequested event,
+    Emitter<HeadlinesManagementState> emit,
+  ) async {
+    emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
+    try {
+      final options = HeadlineQueryOptions(
+        page: state.currentPage,
+        limit: state.perPage,
+        sortBy: event.sortBy,
+        sortDirection: event.sortDirection,
+      );
+      final headlines = await headlinesRepository.getHeadlines(options);
+      emit(
+        state.copyWith(
+          fetchStatus: HeadlinesManagementStatus.success,
+          headlines: headlines.items,
+          hasNextPage: headlines.hasNextPage,
+          sortBy: event.sortBy,
+          sortDirection: event.sortDirection,
+        ),
+      );
+    } catch (_) {
+      emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.failure));
     }
   }
 }

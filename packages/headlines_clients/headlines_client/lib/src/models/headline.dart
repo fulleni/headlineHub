@@ -3,6 +3,7 @@ import 'package:headlines_client/src/models/country.dart';
 import 'package:headlines_client/src/models/language.dart';
 import 'package:headlines_client/src/models/source.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'headline.g.dart';
 
@@ -40,8 +41,7 @@ enum HeadlineCategory {
 @JsonSerializable(explicitToJson: true)
 class Headline extends Equatable {
   /// Creates a new [Headline] instance.
-  const Headline({
-    required this.id,
+  Headline({
     required this.title,
     required this.content,
     required this.publishedBy,
@@ -51,13 +51,15 @@ class Headline extends Equatable {
     required this.language,
     this.category = HeadlineCategory.general,
     this.isActive = true,
-  });
+    String? id,
+  }) : id = id ?? const Uuid().v4();
 
   /// Creates a new [Headline] instance from a JSON object.
   factory Headline.fromJson(Map<String, dynamic> json) =>
       _$HeadlineFromJson(json);
 
   /// Unique identifier for the headline.
+  @JsonKey(includeIfNull: false)
   final String id;
 
   /// The main title of the news article.
@@ -111,7 +113,7 @@ class Headline extends Equatable {
     bool? isActive,
   }) {
     return Headline(
-      id: id ?? this.id,
+      id: id ?? this.id, // Keep existing ID if not specified
       title: title ?? this.title,
       content: content ?? this.content,
       publishedBy: publishedBy ?? this.publishedBy,

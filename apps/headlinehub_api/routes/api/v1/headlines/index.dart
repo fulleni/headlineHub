@@ -9,10 +9,6 @@ Future<Response> onRequest(RequestContext context) async {
       return _handleGetHeadlines(context);
     case HttpMethod.post:
       return _handleCreateHeadline(context);
-    case HttpMethod.put:
-      return _handleUpdateHeadline(context);
-    case HttpMethod.delete:
-      return _handleDeleteHeadline(context);
     // ignore: no_default_cases
     default:
       return Response(statusCode: HttpStatus.methodNotAllowed);
@@ -27,7 +23,7 @@ Future<Response> _handleGetHeadlines(RequestContext context) async {
     final params = context.request.uri.queryParameters;
     final page = int.tryParse(params['page'] ?? '1') ?? 1;
     final limit = int.tryParse(params['limit'] ?? '20') ?? 20;
-    final query = params['query'];
+    final query = params['query']?.toLowerCase();
     final category = params['category'];
     final startDate = params['startDate'] != null
         ? DateTime.tryParse(params['startDate']!)
@@ -45,8 +41,23 @@ Future<Response> _handleGetHeadlines(RequestContext context) async {
 
     PaginatedResponse<Headline> response;
 
-    if (query != null) {
-      response = await client.getHeadlinesByQuery(query, options);
+    if (query != null && query.isNotEmpty) {
+      final allHeadlines = await client.getHeadlines(options);
+      final filteredHeadlines = allHeadlines.items
+          .where((headline) =>
+              headline.title.toLowerCase().contains(query) ||
+              headline.content.toLowerCase().contains(query) ||
+              headline.publishedBy.name.toLowerCase().contains(query))
+          .toList();
+
+      response = PaginatedResponse<Headline>(
+        items: filteredHeadlines,
+        currentPage: page,
+        totalPages: (filteredHeadlines.length / limit).ceil(),
+        totalItems: filteredHeadlines.length,
+        hasNextPage: filteredHeadlines.length > page * limit,
+        hasPreviousPage: page > 1,
+      );
     } else if (category != null) {
       response = await client.getHeadlinesByCategory(
         HeadlineCategory.values.firstWhere(
@@ -135,39 +146,6 @@ Future<Response> _handleUpdateHeadline(RequestContext context) async {
       body: {'error': e.message},
     );
   } on HeadlineUpdateException catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.badRequest,
-      body: {'error': e.message},
-    );
-  } catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.internalServerError,
-      body: {'error': 'An unexpected error occurred'},
-    );
-  }
-}
-
-Future<Response> _handleDeleteHeadline(RequestContext context) async {
-  final client = context.read<InMemoryHeadlinesClient>();
-
-  try {
-    final id = context.request.uri.queryParameters['id'];
-    if (id == null) {
-      return Response.json(
-        statusCode: HttpStatus.badRequest,
-        body: {'error': 'ID is required'},
-      );
-    }
-
-    await client.deleteHeadline(id);
-
-    return Response(statusCode: HttpStatus.noContent);
-  } on HeadlineNotFoundException catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.notFound,
-      body: {'error': e.message},
-    );
-  } on HeadlineDeletionException catch (e) {
     return Response.json(
       statusCode: HttpStatus.badRequest,
       body: {'error': e.message},

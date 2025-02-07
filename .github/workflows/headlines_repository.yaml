@@ -18,5 +18,4 @@ jobs:
       max-parallel: 1
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
     with:
-      flutter_version: 3.24.2
       working_directory: packages/headlines_client/headlines_repository/

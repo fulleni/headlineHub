@@ -8,11 +8,9 @@ sealed class HeadlinesManagementEvent {
 final class HeadlinesFetchRequested extends HeadlinesManagementEvent {
   const HeadlinesFetchRequested({
     this.page = 1,
-    this.limit = 5,
   });
 
   final int page;
-  final int limit;
 }
 
 final class HeadlineFetchByIdRequested extends HeadlinesManagementEvent {
@@ -40,28 +38,44 @@ final class HeadlineDeleteRequested extends HeadlinesManagementEvent {
 }
 
 final class HeadlinesFetchByQueryRequested extends HeadlinesManagementEvent {
-  const HeadlinesFetchByQueryRequested(this.query, {this.limit = 5});
+  const HeadlinesFetchByQueryRequested(this.query);
 
   final String query;
-  final int limit;
 }
 
 final class HeadlinesFetchByCategoryRequested extends HeadlinesManagementEvent {
-  const HeadlinesFetchByCategoryRequested(this.category, {this.limit = 5});
+  const HeadlinesFetchByCategoryRequested(this.category);
 
   final HeadlineCategory category;
-  final int limit;
 }
 
 final class HeadlinesFetchByDateRangeRequested
     extends HeadlinesManagementEvent {
   const HeadlinesFetchByDateRangeRequested(
     this.startDate,
-    this.endDate, {
-    this.limit = 5,
-  });
+    this.endDate,
+  );
 
   final DateTime startDate;
   final DateTime endDate;
-  final int limit;
+}
+
+final class HeadlinesPerPageUpdated extends HeadlinesManagementEvent {
+  const HeadlinesPerPageUpdated(this.perPage);
+
+  final int perPage;
+}
+
+final class HeadlinesSortRequested extends HeadlinesManagementEvent {
+  const HeadlinesSortRequested({
+    required this.sortBy,
+    required this.sortDirection,
+  });
+
+  final HeadlineSortBy sortBy;
+  final SortDirection sortDirection;
+}
+
+final class HeadlineUndoDeleteRequested extends HeadlinesManagementEvent {
+  const HeadlineUndoDeleteRequested();
 }
