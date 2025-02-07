@@ -186,17 +186,17 @@ class HeadlinesManagementBloc
     emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
     try {
       final options = HeadlineQueryOptions(
-        page: 1,  // Reset to first page for new search
+        page: 1, // Reset to first page for new search
         limit: state.perPage,
         sortBy: state.sortBy,
         sortDirection: state.sortDirection,
       );
-      
+
       final headlines = await headlinesRepository.getHeadlinesByQuery(
         event.query,
         options,
       );
-      
+
       emit(state.copyWith(
         fetchStatus: HeadlinesManagementStatus.success,
         headlines: headlines.items,

@@ -43,10 +43,12 @@ Future<Response> _handleGetHeadlines(RequestContext context) async {
 
     if (query != null && query.isNotEmpty) {
       final allHeadlines = await client.getHeadlines(options);
-      final filteredHeadlines = allHeadlines.items.where((headline) =>
-          headline.title.toLowerCase().contains(query) ||
-          headline.content.toLowerCase().contains(query) ||
-          headline.publishedBy.name.toLowerCase().contains(query)).toList();
+      final filteredHeadlines = allHeadlines.items
+          .where((headline) =>
+              headline.title.toLowerCase().contains(query) ||
+              headline.content.toLowerCase().contains(query) ||
+              headline.publishedBy.name.toLowerCase().contains(query))
+          .toList();
 
       response = PaginatedResponse<Headline>(
         items: filteredHeadlines,

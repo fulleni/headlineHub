@@ -118,9 +118,10 @@ class HeadlinehubHeadlinesClient extends HeadlinesClient {
     try {
       final encodedQuery = Uri.encodeComponent(query);
       final response = await httpClient.get(
-        Uri.parse('$baseUrl/headlines?query=$encodedQuery${_buildQueryParams(options)}'),
+        Uri.parse(
+            '$baseUrl/headlines?query=$encodedQuery${_buildQueryParams(options)}'),
       );
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final headlines = (data['items'] as List)
@@ -145,11 +146,10 @@ class HeadlinehubHeadlinesClient extends HeadlinesClient {
 
   String _buildQueryParams(HeadlineQueryOptions? options) {
     if (options == null) return '';
-    
-    final params = <String>[];
-    params.add('page=${options.page}');
-    params.add('limit=${options.limit}');
-    
+
+    final params = <String>['page=${options.page}', 'limit=${options.limit}']
+      ;
+
     if (options.startDate != null) {
       params.add('startDate=${options.startDate!.toIso8601String()}');
     }
@@ -159,7 +159,7 @@ class HeadlinehubHeadlinesClient extends HeadlinesClient {
     if (options.isActive != null) {
       params.add('isActive=${options.isActive}');
     }
-    
+
     return params.isEmpty ? '' : '&${params.join('&')}';
   }
 
