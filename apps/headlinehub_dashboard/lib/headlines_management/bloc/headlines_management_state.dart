@@ -21,6 +21,10 @@ class HeadlinesManagementState {
     this.perPage = 10,
     this.sortBy = HeadlineSortBy.publishedAt,
     this.sortDirection = SortDirection.descending,
+    this.selectedCategory,
+    this.filterDateRange,
+    this.filterStatus,
+    this.searchQuery,
   });
 
   /// The current status of the headlines management page.
@@ -56,6 +60,18 @@ class HeadlinesManagementState {
   /// The current sort direction
   final SortDirection sortDirection;
 
+  /// The currently selected category filter
+  final HeadlineCategory? selectedCategory;
+
+  /// The currently selected date range filter
+  final DateTimeRange? filterDateRange;
+
+  /// The currently selected status filter
+  final HeadlineStatus? filterStatus;
+
+  /// The current search query
+  final String? searchQuery;
+
   /// Creates a copy of this [HeadlinesManagementState] with the given
   /// fields replaced with new values.
   HeadlinesManagementState copyWith({
@@ -72,6 +88,10 @@ class HeadlinesManagementState {
     int? perPage,
     HeadlineSortBy? sortBy,
     SortDirection? sortDirection,
+    HeadlineCategory? selectedCategory,
+    DateTimeRange? filterDateRange,
+    HeadlineStatus? filterStatus,
+    String? searchQuery,
   }) {
     return HeadlinesManagementState(
       fetchStatus: fetchStatus ?? this.fetchStatus,
@@ -87,6 +107,10 @@ class HeadlinesManagementState {
       perPage: perPage ?? this.perPage,
       sortBy: sortBy ?? this.sortBy,
       sortDirection: sortDirection ?? this.sortDirection,
+      selectedCategory: selectedCategory, // Allow null to clear filter
+      filterDateRange: filterDateRange, // Allow null to clear filter
+      filterStatus: filterStatus, // Allow null to clear filter
+      searchQuery: searchQuery, // Allow null to clear filter
     );
   }
 }

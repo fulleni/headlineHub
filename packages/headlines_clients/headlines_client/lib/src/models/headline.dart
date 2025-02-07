@@ -7,6 +7,21 @@ import 'package:uuid/uuid.dart';
 
 part 'headline.g.dart';
 
+/// Status values for headlines
+enum HeadlineStatus {
+  /// Published and visible to users
+  published,
+
+  /// Draft state, not visible to users
+  draft,
+
+  /// Archived headlines
+  archived,
+
+  /// Headlines pending review
+  pending
+}
+
 /// Available categories for news headlines
 enum HeadlineCategory {
   /// General news category for miscellaneous news
@@ -50,7 +65,7 @@ class Headline extends Equatable {
     required this.happenedIn,
     required this.language,
     this.category = HeadlineCategory.general,
-    this.isActive = true,
+    this.status = HeadlineStatus.draft,
     String? id,
   }) : id = id ?? const Uuid().v4();
 
@@ -79,15 +94,19 @@ class Headline extends Equatable {
   )
   final HeadlineCategory category;
 
+  /// The status of the headline
+  /// Defaults to HeadlineStatus.draft if not specified.
+  @JsonKey(
+    fromJson: _statusFromJson,
+    toJson: _statusToJson,
+  )
+  final HeadlineStatus status;
+
   /// The country where the headline has happened.
   final Country happenedIn;
 
   /// The language in which the headline is written.
   final Language language;
-
-  /// Indicates if the headline is currently active/visible.
-  /// Defaults to true.
-  final bool isActive;
 
   /// The source or publisher of the news article.
   final Source publishedBy;
@@ -106,6 +125,7 @@ class Headline extends Equatable {
     String? content,
     String? imageUrl,
     HeadlineCategory? category,
+    HeadlineStatus? status,
     Country? happenedIn,
     Source? publishedBy,
     DateTime? publishedAt,
@@ -122,7 +142,7 @@ class Headline extends Equatable {
       happenedIn: happenedIn ?? this.happenedIn,
       language: language ?? this.language,
       category: category ?? this.category,
-      isActive: isActive ?? this.isActive,
+      status: status ?? this.status,
     );
   }
 
@@ -145,6 +165,17 @@ class Headline extends Equatable {
   /// @return The string name of the category
   static String _categoryToJson(HeadlineCategory category) => category.name;
 
+  /// Helper method to convert string to HeadlineStatus
+  static HeadlineStatus _statusFromJson(String value) {
+    return HeadlineStatus.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => HeadlineStatus.draft,
+    );
+  }
+
+  /// Helper method to convert HeadlineStatus to string
+  static String _statusToJson(HeadlineStatus status) => status.name;
+
   @override
   List<Object?> get props => [
         id,
@@ -154,7 +185,7 @@ class Headline extends Equatable {
         category,
         happenedIn,
         language,
-        isActive,
+        status,
         publishedAt,
         publishedBy,
       ];

@@ -1,11 +1,12 @@
 // ignore_for_file: avoid_redundant_argument_values
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide DateTimeRange;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:headlinehub_dashboard/headlines_management/bloc/headlines_management_bloc.dart';
 import 'package:headlinehub_dashboard/headlines_management/view/headline_create_page.dart';
 import 'package:headlinehub_dashboard/headlines_management/view/headline_update_page.dart';
 import 'package:headlines_repository/headlines_repository.dart';
+import 'package:intl/intl.dart' as intl;
 
 /// A page that enable managing headlines.
 class HeadlinesManagementPage extends StatelessWidget {
@@ -32,11 +33,38 @@ class _HeadlinesManagementView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Headlines'),
-        actions: [
-          _AddHeadlineButton(),
-          const _SearchButton(),
-          const _RefreshButton(),
+        actions: const [
+          _RefreshButton(),
+          _SearchButton(),
+          _FilterButton(),
         ],
+      ),
+      floatingActionButton: Padding(
+        padding:
+            const EdgeInsets.only(bottom: 80), // Add padding to avoid overlap
+        child: FloatingActionButton(
+          onPressed: () async {
+            final result = await Navigator.of(context).push<bool>(
+              MaterialPageRoute<bool>(
+                builder: (context) => const HeadlineCreatePage(),
+              ),
+            );
+            if (!context.mounted) return;
+            if (result == false) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  showCloseIcon: true,
+                  content: Text('Headline creation failed'),
+                ),
+              );
+            } else {
+              context
+                  .read<HeadlinesManagementBloc>()
+                  .add(const HeadlinesFetchRequested());
+            }
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
       body: BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
         builder: (context, state) {
@@ -115,9 +143,13 @@ class _SuccessView extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: _HeadlineTable(headlines: headlines),
+            child: Padding(
+              padding: const EdgeInsets.all(16), // Add padding around table
+              child: _HeadlineTable(headlines: headlines),
+            ),
           ),
           Container(
+            height: 64, // Fixed height for pagination
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               boxShadow: [
@@ -162,12 +194,11 @@ class _HeadlineTable extends StatelessWidget {
                   tooltip: 'Sort by title',
                   onSort: (columnIndex, ascending) =>
                       context.read<HeadlinesManagementBloc>().add(
-                            HeadlinesSortRequested(
+                            HeadlinesFetchRequested(
                               sortBy: HeadlineSortBy.title,
-                              sortDirection:
-                                  state.sortDirection == SortDirection.ascending
-                                      ? SortDirection.descending
-                                      : SortDirection.ascending,
+                              sortDirection: ascending
+                                  ? SortDirection.ascending
+                                  : SortDirection.descending,
                             ),
                           ),
                 ),
@@ -179,12 +210,11 @@ class _HeadlineTable extends StatelessWidget {
                   tooltip: 'Sort by source',
                   onSort: (columnIndex, ascending) =>
                       context.read<HeadlinesManagementBloc>().add(
-                            HeadlinesSortRequested(
+                            HeadlinesFetchRequested(
                               sortBy: HeadlineSortBy.source,
-                              sortDirection:
-                                  state.sortDirection == SortDirection.ascending
-                                      ? SortDirection.descending
-                                      : SortDirection.ascending,
+                              sortDirection: ascending
+                                  ? SortDirection.ascending
+                                  : SortDirection.descending,
                             ),
                           ),
                 ),
@@ -196,12 +226,11 @@ class _HeadlineTable extends StatelessWidget {
                   tooltip: 'Sort by category',
                   onSort: (columnIndex, ascending) =>
                       context.read<HeadlinesManagementBloc>().add(
-                            HeadlinesSortRequested(
+                            HeadlinesFetchRequested(
                               sortBy: HeadlineSortBy.category,
-                              sortDirection:
-                                  state.sortDirection == SortDirection.ascending
-                                      ? SortDirection.descending
-                                      : SortDirection.ascending,
+                              sortDirection: ascending
+                                  ? SortDirection.ascending
+                                  : SortDirection.descending,
                             ),
                           ),
                 ),
@@ -213,12 +242,11 @@ class _HeadlineTable extends StatelessWidget {
                   tooltip: 'Sort by publication date',
                   onSort: (columnIndex, ascending) =>
                       context.read<HeadlinesManagementBloc>().add(
-                            HeadlinesSortRequested(
+                            HeadlinesFetchRequested(
                               sortBy: HeadlineSortBy.publishedAt,
-                              sortDirection:
-                                  state.sortDirection == SortDirection.ascending
-                                      ? SortDirection.descending
-                                      : SortDirection.ascending,
+                              sortDirection: ascending
+                                  ? SortDirection.ascending
+                                  : SortDirection.descending,
                             ),
                           ),
                 ),
@@ -230,12 +258,11 @@ class _HeadlineTable extends StatelessWidget {
                   tooltip: 'Sort by status',
                   onSort: (columnIndex, ascending) =>
                       context.read<HeadlinesManagementBloc>().add(
-                            HeadlinesSortRequested(
+                            HeadlinesFetchRequested(
                               sortBy: HeadlineSortBy.status,
-                              sortDirection:
-                                  state.sortDirection == SortDirection.ascending
-                                      ? SortDirection.descending
-                                      : SortDirection.ascending,
+                              sortDirection: ascending
+                                  ? SortDirection.ascending
+                                  : SortDirection.descending,
                             ),
                           ),
                 ),
@@ -292,7 +319,10 @@ class _HeadlineTable extends StatelessWidget {
                       Container(
                         width: 100,
                         child: Text(
-                          headline.isActive ? 'Published' : 'Draft',
+                          headline.status.name,
+                          style: TextStyle(
+                            color: _getStatusColor(headline.status),
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -377,6 +407,19 @@ class _HeadlineTable extends StatelessWidget {
   }
 }
 
+Color _getStatusColor(HeadlineStatus status) {
+  switch (status) {
+    case HeadlineStatus.published:
+      return Colors.green;
+    case HeadlineStatus.draft:
+      return Colors.grey;
+    case HeadlineStatus.archived:
+      return Colors.brown;
+    case HeadlineStatus.pending:
+      return Colors.orange;
+  }
+}
+
 /// Pagination controls for the headlines management page.
 class _Pagination extends StatelessWidget {
   @override
@@ -384,36 +427,56 @@ class _Pagination extends StatelessWidget {
     return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
       builder: (context, state) {
         return Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton(
-                onPressed: state.currentPage > 1
-                    ? () {
-                        context.read<HeadlinesManagementBloc>().add(
-                              HeadlinesFetchRequested(
-                                page: state.currentPage - 1,
-                              ),
-                            );
-                      }
-                    : null,
-                child: const Text('Prev'),
+              // Navigation buttons group
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: state.currentPage > 1
+                        ? () {
+                            context.read<HeadlinesManagementBloc>().add(
+                                  HeadlinesFetchRequested(
+                                    page: state.currentPage - 1,
+                                  ),
+                                );
+                          }
+                        : null,
+                    child: const Text('Previous'),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    '${state.currentPage} of ${state.totalPages}',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(width: 16),
+                  TextButton(
+                    onPressed: state.hasNextPage
+                        ? () {
+                            context.read<HeadlinesManagementBloc>().add(
+                                  HeadlinesFetchRequested(
+                                    page: state.currentPage + 1,
+                                  ),
+                                );
+                          }
+                        : null,
+                    child: const Text('Next'),
+                  ),
+                ],
               ),
-              Text('${state.currentPage} of ${state.totalPages}'),
-              TextButton(
-                onPressed: state.hasNextPage
-                    ? () {
-                        context.read<HeadlinesManagementBloc>().add(
-                              HeadlinesFetchRequested(
-                                page: state.currentPage + 1,
-                              ),
-                            );
-                      }
-                    : null,
-                child: const Text('Next'),
+              // Items per page dropdown
+              Row(
+                children: [
+                  Text(
+                    'Show',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(width: 8),
+                  _ItemsPerPageDropdown(),
+                ],
               ),
-              _ItemsPerPageDropdown(),
             ],
           ),
         );
@@ -428,57 +491,29 @@ class _ItemsPerPageDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
       builder: (context, state) {
-        return DropdownButton<int>(
-          value: state.perPage,
-          items: [10, 20, 40]
-              .map(
-                (value) => DropdownMenuItem<int>(
-                  value: value,
-                  child: Text('$value items per page'),
-                ),
-              )
-              .toList(),
-          onChanged: (value) {
-            if (value != null) {
-              context.read<HeadlinesManagementBloc>()
-                ..add(HeadlinesPerPageUpdated(value))
-                ..add(const HeadlinesFetchRequested());
-            }
-          },
+        return SizedBox(
+          width: 140, // Fixed width for consistency
+          child: DropdownButtonFormField<int>(
+            decoration: const InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            value: state.perPage,
+            items: const [
+              DropdownMenuItem(value: 10, child: Text('10 per page')),
+              DropdownMenuItem(value: 25, child: Text('25 per page')),
+              DropdownMenuItem(value: 50, child: Text('50 per page')),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                context.read<HeadlinesManagementBloc>().add(
+                      HeadlinesFetchRequested(perPage: value),
+                    );
+              }
+            },
+          ),
         );
       },
-    );
-  }
-}
-
-class _AddHeadlineButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: IconButton(
-        onPressed: () async {
-          final result = await Navigator.of(context).push<bool>(
-            MaterialPageRoute<bool>(
-              builder: (context) => const HeadlineCreatePage(),
-            ),
-          );
-          if (!context.mounted) return;
-          if (result == false) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                showCloseIcon: true,
-                content: Text('Headline creation failed'),
-              ),
-            );
-          } else {
-            context
-                .read<HeadlinesManagementBloc>()
-                .add(const HeadlinesFetchRequested());
-          }
-        },
-        icon: const Icon(Icons.add),
-      ),
     );
   }
 }
@@ -491,13 +526,252 @@ class _SearchButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.search),
       onPressed: () {
-        showSearch(
+        final searchController = TextEditingController();
+        showDialog<dynamic>(
           context: context,
-          delegate: HeadlinesSearchDelegate(
-            BlocProvider.of<HeadlinesManagementBloc>(context),
+          builder: (dialogContext) => BlocProvider.value(
+            value: context.read<HeadlinesManagementBloc>(),
+            child: AlertDialog(
+              title: const Text('Search Headlines'),
+              content: TextField(
+                controller: searchController,
+                decoration: const InputDecoration(
+                  labelText: 'Search',
+                  hintText: 'Enter search terms...',
+                ),
+                onSubmitted: (value) {
+                  context.read<HeadlinesManagementBloc>().add(
+                        HeadlinesFetchRequested(searchQuery: value),
+                      );
+                  Navigator.pop(dialogContext);
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    context.read<HeadlinesManagementBloc>().add(
+                          HeadlinesFetchRequested(
+                            searchQuery: searchController.text,
+                          ),
+                        );
+                    Navigator.pop(dialogContext);
+                  },
+                  child: const Text('Search'),
+                ),
+              ],
+            ),
           ),
         );
       },
+    );
+  }
+}
+
+class _FilterButton extends StatelessWidget {
+  const _FilterButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
+      builder: (context, state) {
+        final hasActiveFilters = state.selectedCategory != null ||
+            state.filterDateRange != null ||
+            state.filterStatus != null ||
+            state.searchQuery != null;
+
+        return IconButton(
+          icon: Badge(
+            isLabelVisible: hasActiveFilters,
+            child: const Icon(Icons.filter_list),
+          ),
+          tooltip: 'Filter headlines',
+          onPressed: () => _showFilterDialog(context),
+        );
+      },
+    );
+  }
+
+  void _showFilterDialog(BuildContext context) {
+    // Get the bloc before showing dialog
+    final bloc = context.read<HeadlinesManagementBloc>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        // Provide the bloc to the dialog
+        return BlocProvider.value(
+          value: bloc,
+          child: AlertDialog(
+            title: const Text('Filter Headlines'),
+            content: SizedBox(
+              width: 400,
+              child: SingleChildScrollView(
+                child: BlocBuilder<HeadlinesManagementBloc,
+                    HeadlinesManagementState>(
+                  builder: (context, state) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildCategoryFilter(context, state),
+                        const SizedBox(height: 16),
+                        _buildStatusFilter(context, state),
+                        const SizedBox(height: 16),
+                        _buildDateRangeFilter(context, state),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<HeadlinesManagementBloc>().add(
+                        HeadlinesFetchRequested(
+                          category: bloc.state.selectedCategory,
+                          dateRange: bloc.state.filterDateRange,
+                          status: bloc.state.filterStatus,
+                          searchQuery: bloc.state.searchQuery,
+                        ),
+                      );
+                  Navigator.pop(context);
+                },
+                child: const Text('Apply'),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<HeadlinesManagementBloc>().add(
+                        const HeadlinesFetchRequested(
+                          category: null,
+                          dateRange: null,
+                          status: null,
+                          searchQuery: null,
+                        ),
+                      );
+                  Navigator.pop(context);
+                },
+                child: const Text('Reset'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryFilter(
+      BuildContext context, HeadlinesManagementState state) {
+    return DropdownButtonFormField<HeadlineCategory?>(
+      decoration: const InputDecoration(labelText: 'Category'),
+      value: state.selectedCategory,
+      items: [
+        const DropdownMenuItem(value: null, child: Text('All Categories')),
+        ...HeadlineCategory.values.map(
+          (category) => DropdownMenuItem(
+            value: category,
+            child: Text(category.name),
+          ),
+        ),
+      ],
+      onChanged: (value) {
+        context.read<HeadlinesManagementBloc>().add(
+              HeadlinesFetchRequested(category: value),
+            );
+      },
+    );
+  }
+
+  Widget _buildStatusFilter(
+      BuildContext context, HeadlinesManagementState state) {
+    return DropdownButtonFormField<HeadlineStatus?>(
+      decoration: const InputDecoration(labelText: 'Status'),
+      value: state.filterStatus,
+      items: [
+        const DropdownMenuItem(value: null, child: Text('All Statuses')),
+        ...HeadlineStatus.values.map(
+          (status) => DropdownMenuItem(
+            value: status,
+            child: Text(status.name),
+          ),
+        ),
+      ],
+      onChanged: (value) {
+        context.read<HeadlinesManagementBloc>().add(
+              HeadlinesFetchRequested(status: value),
+            );
+      },
+    );
+  }
+
+  Widget _buildDateRangeFilter(
+      BuildContext context, HeadlinesManagementState state) {
+    final dateFormat = intl.DateFormat('dd/MM/yyyy');
+    return Row(
+      children: [
+        Expanded(
+          child: TextButton.icon(
+            icon: const Icon(Icons.calendar_today),
+            label: Text(
+              state.filterDateRange?.start != null
+                  ? dateFormat.format(state.filterDateRange!.start)
+                  : 'Start Date',
+            ),
+            onPressed: () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: state.filterDateRange?.start ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+              );
+              if (date != null && context.mounted) {
+                final endDate = state.filterDateRange?.end ??
+                    date.add(const Duration(days: 30));
+                context.read<HeadlinesManagementBloc>().add(
+                      HeadlinesFetchRequested(
+                        dateRange: DateTimeRange(start: date, end: endDate),
+                      ),
+                    );
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextButton.icon(
+            icon: const Icon(Icons.calendar_today),
+            label: Text(
+              state.filterDateRange?.end != null
+                  ? dateFormat.format(state.filterDateRange!.end)
+                  : 'End Date',
+            ),
+            onPressed: () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: state.filterDateRange?.end ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+              );
+              if (date != null && context.mounted) {
+                final startDate = state.filterDateRange?.start ??
+                    date.subtract(const Duration(days: 30));
+                context.read<HeadlinesManagementBloc>().add(
+                      HeadlinesFetchRequested(
+                        dateRange: DateTimeRange(start: startDate, end: date),
+                      ),
+                    );
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -509,77 +783,11 @@ class _RefreshButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.refresh),
-      tooltip: 'Refresh headlines',
       onPressed: () {
         context
             .read<HeadlinesManagementBloc>()
             .add(const HeadlinesFetchRequested());
       },
     );
-  }
-}
-
-class HeadlinesSearchDelegate extends SearchDelegate<String> {
-  HeadlinesSearchDelegate(this.bloc);
-
-  final HeadlinesManagementBloc bloc;
-
-  @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    bloc.add(HeadlinesFetchByQueryRequested(query));
-    close(context, '');
-    return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
-      bloc: bloc,
-      builder: (context, state) {
-        if (state.fetchStatus == HeadlinesManagementStatus.loading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state.fetchStatus == HeadlinesManagementStatus.failure) {
-          return const Center(child: Text('Failed to fetch headlines'));
-        } else if (state.fetchStatus == HeadlinesManagementStatus.success) {
-          return ListView.builder(
-            itemCount: state.headlines.length,
-            itemBuilder: (context, index) {
-              final headline = state.headlines[index];
-              return ListTile(
-                title: Text(headline.title),
-                subtitle: Text(headline.publishedBy.name),
-                onTap: () {
-                  close(context, headline.title);
-                },
-              );
-            },
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return Container();
   }
 }

@@ -105,9 +105,10 @@ class HeadlineQueryOptions {
   const HeadlineQueryOptions({
     this.page = 1,
     this.limit = 20,
-    this.startDate,
-    this.endDate,
-    this.isActive,
+    this.dateRange,
+    this.status,
+    this.category,
+    this.searchQuery,
     this.sortBy = HeadlineSortBy.publishedAt,
     this.sortDirection = SortDirection.descending,
   });
@@ -118,20 +119,61 @@ class HeadlineQueryOptions {
   /// The number of items per page
   final int limit;
 
-  /// Filter headlines published after this date
-  final DateTime? startDate;
+  /// Filter headlines by date range
+  final DateTimeRange? dateRange;
 
-  /// Filter headlines published before this date
-  final DateTime? endDate;
+  /// Filter headlines by status
+  final HeadlineStatus? status;
 
-  /// Filter headlines by active status
-  final bool? isActive;
+  /// Filter headlines by category
+  final HeadlineCategory? category;
+
+  /// Search query to filter headlines
+  final String? searchQuery;
 
   /// The field to sort results by
   final HeadlineSortBy sortBy;
 
   /// The direction to sort results
   final SortDirection sortDirection;
+
+  /// Creates a copy of this [HeadlineQueryOptions] with the given fields replaced
+  HeadlineQueryOptions copyWith({
+    int? page,
+    int? limit,
+    DateTimeRange? dateRange,
+    HeadlineStatus? status,
+    HeadlineCategory? category,
+    String? searchQuery,
+    HeadlineSortBy? sortBy,
+    SortDirection? sortDirection,
+  }) {
+    return HeadlineQueryOptions(
+      page: page ?? this.page,
+      limit: limit ?? this.limit,
+      dateRange: dateRange ?? this.dateRange,
+      status: status ?? this.status,
+      category: category ?? this.category,
+      searchQuery: searchQuery ?? this.searchQuery,
+      sortBy: sortBy ?? this.sortBy,
+      sortDirection: sortDirection ?? this.sortDirection,
+    );
+  }
+}
+
+/// Date range for filtering headlines
+class DateTimeRange {
+  /// Creates a new [DateTimeRange]
+  const DateTimeRange({
+    required this.start,
+    required this.end,
+  });
+
+  /// Start date of the range
+  final DateTime start;
+
+  /// End date of the range
+  final DateTime end;
 }
 
 /// Available fields for sorting headlines
@@ -144,7 +186,6 @@ enum HeadlineSortBy {
 
   /// Sort by category
   category,
-
 
   /// Sort by publication date
   publishedAt,
@@ -169,9 +210,15 @@ abstract class HeadlinesClient {
   /// {@macro headlines_client}
   const HeadlinesClient();
 
-  // CORE CRUD OPERATIONS
-
-  /// Streams a paginated list of all headlines
+  /// Retrieves a paginated list of headlines with optional filtering
+  ///
+  /// All filtering is handled through the [options] parameter:
+  /// - Pagination through [page] and [limit]
+  /// - Date filtering through [dateRange]
+  /// - Status filtering through [status]
+  /// - Category filtering through [category]
+  /// - Search through [searchQuery]
+  /// - Sorting through [sortBy] and [sortDirection]
   ///
   /// Throws a [HeadlineSearchingException] if there's an error fetching headlines.
   Future<PaginatedResponse<Headline>> getHeadlines([
@@ -197,31 +244,4 @@ abstract class HeadlinesClient {
   ///
   /// Throws a [HeadlineDeletionException] if there's an error deleting the headline.
   Future<void> deleteHeadline(String id);
-
-  // SEARCH AND FILTER OPERATIONS
-
-  /// Headlines matching the query string
-  ///
-  /// Throws a [HeadlineSearchingException] if there's an error searching headlines.
-  Future<PaginatedResponse<Headline>> getHeadlinesByQuery(
-    String query, [
-    HeadlineQueryOptions? options,
-  ]);
-
-  /// Headlines for a specific category
-  ///
-  /// Throws a [HeadlineCategoryException] if there's an error fetching headlines for the category.
-  Future<PaginatedResponse<Headline>> getHeadlinesByCategory(
-    HeadlineCategory category, [
-    HeadlineQueryOptions? options,
-  ]);
-
-  /// Headlines within a date range
-  ///
-  /// Throws a [HeadlineDateRangeException] if there's an error fetching headlines for the date range.
-  Future<PaginatedResponse<Headline>> getHeadlinesByDateRange(
-    DateTime startDate,
-    DateTime endDate, [
-    HeadlineQueryOptions? options,
-  ]);
 }

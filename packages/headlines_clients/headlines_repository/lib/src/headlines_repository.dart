@@ -57,40 +57,4 @@ class HeadlinesRepository {
     }
   }
 
-  /// Headlines matching the query string
-  Future<PaginatedResponse<Headline>> getHeadlinesByQuery(
-    String query, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      return await client.getHeadlinesByQuery(query, options);
-    } catch (e) {
-      throw const HeadlineSearchingException();
-    }
-  }
-
-  /// Headlines for a specific category
-  Future<PaginatedResponse<Headline>> getHeadlinesByCategory(
-    HeadlineCategory category, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      return await client.getHeadlinesByCategory(category, options);
-    } catch (e) {
-      throw const HeadlineCategoryException();
-    }
-  }
-
-  /// Headlines within a date range
-  Future<PaginatedResponse<Headline>> getHeadlinesByDateRange(
-    DateTime startDate,
-    DateTime endDate, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      return await client.getHeadlinesByDateRange(startDate, endDate, options);
-    } catch (e) {
-      throw const HeadlineDateRangeException();
-    }
-  }
 }

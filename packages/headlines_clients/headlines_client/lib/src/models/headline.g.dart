@@ -7,7 +7,6 @@ part of 'headline.dart';
 // **************************************************************************
 
 Headline _$HeadlineFromJson(Map<String, dynamic> json) => Headline(
-      id: json['id'] as String,
       title: json['title'] as String,
       content: json['content'] as String,
       publishedBy: Source.fromJson(json['publishedBy'] as Map<String, dynamic>),
@@ -18,7 +17,10 @@ Headline _$HeadlineFromJson(Map<String, dynamic> json) => Headline(
       category: json['category'] == null
           ? HeadlineCategory.general
           : Headline._categoryFromJson(json['category'] as String),
-      isActive: json['isActive'] as bool? ?? true,
+      status: json['status'] == null
+          ? HeadlineStatus.draft
+          : Headline._statusFromJson(json['status'] as String),
+      id: json['id'] as String?,
     );
 
 Map<String, dynamic> _$HeadlineToJson(Headline instance) => <String, dynamic>{
@@ -27,9 +29,9 @@ Map<String, dynamic> _$HeadlineToJson(Headline instance) => <String, dynamic>{
       'content': instance.content,
       'imageUrl': instance.imageUrl,
       'category': Headline._categoryToJson(instance.category),
+      'status': Headline._statusToJson(instance.status),
       'happenedIn': instance.happenedIn.toJson(),
       'language': instance.language.toJson(),
-      'isActive': instance.isActive,
       'publishedBy': instance.publishedBy.toJson(),
       'publishedAt': instance.publishedAt.toIso8601String(),
     };
