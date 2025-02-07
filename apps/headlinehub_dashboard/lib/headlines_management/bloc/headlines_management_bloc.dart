@@ -21,6 +21,7 @@ class HeadlinesManagementBloc
         _onHeadlinesFetchByDateRangeRequested);
     on<HeadlinesPerPageUpdated>(_onHeadlinesPerPageUpdated);
     on<HeadlinesSortRequested>(_onHeadlinesSortRequested);
+    on<HeadlineUndoDeleteRequested>(_onHeadlineUndoDeleteRequested);
   }
 
   final HeadlinesRepository headlinesRepository;
@@ -118,8 +119,11 @@ class HeadlinesManagementBloc
   ) async {
     emit(state.copyWith(deleteStatus: HeadlinesManagementStatus.loading));
     try {
+      // Store the headline before deleting it
+      final deletedHeadline =
+          state.headlines.firstWhere((h) => h.id == event.id);
       await headlinesRepository.deleteHeadline(event.id);
-      // Refresh the headlines list after successful deletion
+
       final options = HeadlineQueryOptions(
         page: state.currentPage,
         limit: state.perPage,
@@ -134,10 +138,44 @@ class HeadlinesManagementBloc
           headlines: headlines.items,
           hasNextPage: headlines.hasNextPage,
           totalPages: (headlines.totalItems / state.perPage).ceil(),
+          deletedHeadline: deletedHeadline,
         ),
       );
     } catch (_) {
-      emit(state.copyWith(deleteStatus: HeadlinesManagementStatus.failure));
+      emit(state.copyWith(
+        deleteStatus: HeadlinesManagementStatus.failure,
+        deletedHeadline: null,
+      ));
+    }
+  }
+
+  Future<void> _onHeadlineUndoDeleteRequested(
+    HeadlineUndoDeleteRequested event,
+    Emitter<HeadlinesManagementState> emit,
+  ) async {
+    if (state.deletedHeadline == null) return;
+
+    try {
+      final restoredHeadline = await headlinesRepository.createHeadline(
+        state.deletedHeadline!,
+      );
+
+      final options = HeadlineQueryOptions(
+        page: state.currentPage,
+        limit: state.perPage,
+        sortBy: state.sortBy,
+        sortDirection: state.sortDirection,
+      );
+      final headlines = await headlinesRepository.getHeadlines(options);
+
+      emit(state.copyWith(
+        headlines: headlines.items,
+        deletedHeadline: null,
+        hasNextPage: headlines.hasNextPage,
+        totalPages: (headlines.totalItems / state.perPage).ceil(),
+      ));
+    } catch (_) {
+      emit(state.copyWith(deletedHeadline: null));
     }
   }
 

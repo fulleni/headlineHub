@@ -75,3 +75,7 @@ final class HeadlinesSortRequested extends HeadlinesManagementEvent {
   final HeadlineSortBy sortBy;
   final SortDirection sortDirection;
 }
+
+final class HeadlineUndoDeleteRequested extends HeadlinesManagementEvent {
+  const HeadlineUndoDeleteRequested();
+}

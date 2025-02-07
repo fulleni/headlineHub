@@ -288,8 +288,9 @@ class HeadlinehubHeadlinesClient extends HeadlinesClient {
   @override
   Future<void> deleteHeadline(String id) async {
     try {
-      final response =
-          await httpClient.delete(Uri.parse('$baseUrl/headlines/$id'));
+      final response = await httpClient.delete(
+        Uri.parse('$baseUrl/headlines/$id'),
+      );
       if (response.statusCode != 204) {
         throw const HeadlineDeletionException('Failed to delete headline');
       }

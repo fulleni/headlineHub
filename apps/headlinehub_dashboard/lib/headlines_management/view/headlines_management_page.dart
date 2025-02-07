@@ -86,10 +86,19 @@ class _SuccessView extends StatelessWidget {
           previous.deleteStatus != current.deleteStatus,
       listener: (context, state) {
         if (state.deleteStatus == HeadlinesManagementStatus.success) {
+          ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Headline deleted successfully'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: const Text('Headline deleted'),
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Undo',
+                onPressed: () {
+                  context
+                      .read<HeadlinesManagementBloc>()
+                      .add(const HeadlineUndoDeleteRequested());
+                },
+              ),
             ),
           );
         } else if (state.deleteStatus == HeadlinesManagementStatus.failure) {
@@ -323,7 +332,7 @@ class _HeadlineTable extends StatelessWidget {
                               onPressed: () {
                                 showDialog(
                                   context: context,
-                                  builder: (context) => AlertDialog(
+                                  builder: (dialogContext) => AlertDialog(
                                     title: const Text('Delete Headline'),
                                     content: const Text(
                                       'Are you sure you want to delete this headline?',
@@ -331,12 +340,12 @@ class _HeadlineTable extends StatelessWidget {
                                     actions: [
                                       TextButton(
                                         onPressed: () =>
-                                            Navigator.of(context).pop(),
+                                            Navigator.of(dialogContext).pop(),
                                         child: const Text('Cancel'),
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          Navigator.of(context).pop();
+                                          Navigator.of(dialogContext).pop();
                                           context
                                               .read<HeadlinesManagementBloc>()
                                               .add(HeadlineDeleteRequested(
@@ -364,19 +373,6 @@ class _HeadlineTable extends StatelessWidget {
         );
       },
     );
-  }
-
-  void _onSort(
-    BuildContext context,
-    HeadlineSortBy sortBy,
-    SortDirection direction,
-  ) {
-    context.read<HeadlinesManagementBloc>().add(
-          HeadlinesSortRequested(
-            sortBy: sortBy,
-            sortDirection: direction,
-          ),
-        );
   }
 }
 

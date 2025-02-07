@@ -15,6 +15,7 @@ class HeadlinesManagementState {
     this.headlines = const [],
     this.hasNextPage = false,
     this.headline,
+    this.deletedHeadline,
     this.currentPage = 1,
     this.totalPages = 1,
     this.perPage = 10,
@@ -36,6 +37,9 @@ class HeadlinesManagementState {
 
   /// The headline fetched by ID.
   final Headline? headline;
+
+  /// The headline that was last deleted (for undo functionality)
+  final Headline? deletedHeadline;
 
   /// The current page of headlines.
   final int currentPage;
@@ -62,6 +66,7 @@ class HeadlinesManagementState {
     List<Headline>? headlines,
     bool? hasNextPage,
     Headline? headline,
+    Headline? deletedHeadline,
     int? currentPage,
     int? totalPages,
     int? perPage,
@@ -76,6 +81,7 @@ class HeadlinesManagementState {
       headlines: headlines ?? this.headlines,
       hasNextPage: hasNextPage ?? this.hasNextPage,
       headline: headline ?? this.headline,
+      deletedHeadline: deletedHeadline ?? this.deletedHeadline,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       perPage: perPage ?? this.perPage,

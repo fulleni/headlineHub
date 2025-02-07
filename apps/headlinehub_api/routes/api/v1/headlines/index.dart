@@ -9,10 +9,6 @@ Future<Response> onRequest(RequestContext context) async {
       return _handleGetHeadlines(context);
     case HttpMethod.post:
       return _handleCreateHeadline(context);
-    case HttpMethod.put:
-      return _handleUpdateHeadline(context);
-    case HttpMethod.delete:
-      return _handleDeleteHeadline(context);
     // ignore: no_default_cases
     default:
       return Response(statusCode: HttpStatus.methodNotAllowed);
@@ -135,39 +131,6 @@ Future<Response> _handleUpdateHeadline(RequestContext context) async {
       body: {'error': e.message},
     );
   } on HeadlineUpdateException catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.badRequest,
-      body: {'error': e.message},
-    );
-  } catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.internalServerError,
-      body: {'error': 'An unexpected error occurred'},
-    );
-  }
-}
-
-Future<Response> _handleDeleteHeadline(RequestContext context) async {
-  final client = context.read<InMemoryHeadlinesClient>();
-
-  try {
-    final id = context.request.uri.queryParameters['id'];
-    if (id == null) {
-      return Response.json(
-        statusCode: HttpStatus.badRequest,
-        body: {'error': 'ID is required'},
-      );
-    }
-
-    await client.deleteHeadline(id);
-
-    return Response(statusCode: HttpStatus.noContent);
-  } on HeadlineNotFoundException catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.notFound,
-      body: {'error': e.message},
-    );
-  } on HeadlineDeletionException catch (e) {
     return Response.json(
       statusCode: HttpStatus.badRequest,
       body: {'error': e.message},
