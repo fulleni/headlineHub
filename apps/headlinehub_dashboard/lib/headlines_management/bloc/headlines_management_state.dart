@@ -22,9 +22,9 @@ class HeadlinesManagementState {
     this.sortBy = HeadlineSortBy.publishedAt,
     this.sortDirection = SortDirection.descending,
     this.selectedCategory,
-    this.filterStartDate,
-    this.filterEndDate,
+    this.filterDateRange,
     this.filterStatus,
+    this.searchQuery,
   });
 
   /// The current status of the headlines management page.
@@ -63,14 +63,14 @@ class HeadlinesManagementState {
   /// The currently selected category filter
   final HeadlineCategory? selectedCategory;
 
-  /// The start date for filtering
-  final DateTime? filterStartDate;
+  /// The currently selected date range filter
+  final DateTimeRange? filterDateRange;
 
-  /// The end date for filtering
-  final DateTime? filterEndDate;
+  /// The currently selected status filter
+  final HeadlineStatus? filterStatus;
 
-  /// The status filter
-  final bool? filterStatus;
+  /// The current search query
+  final String? searchQuery;
 
   /// Creates a copy of this [HeadlinesManagementState] with the given
   /// fields replaced with new values.
@@ -89,9 +89,9 @@ class HeadlinesManagementState {
     HeadlineSortBy? sortBy,
     SortDirection? sortDirection,
     HeadlineCategory? selectedCategory,
-    DateTime? filterStartDate,
-    DateTime? filterEndDate,
-    bool? filterStatus,
+    DateTimeRange? filterDateRange,
+    HeadlineStatus? filterStatus,
+    String? searchQuery,
   }) {
     return HeadlinesManagementState(
       fetchStatus: fetchStatus ?? this.fetchStatus,
@@ -107,10 +107,10 @@ class HeadlinesManagementState {
       perPage: perPage ?? this.perPage,
       sortBy: sortBy ?? this.sortBy,
       sortDirection: sortDirection ?? this.sortDirection,
-      selectedCategory: selectedCategory ?? this.selectedCategory,
-      filterStartDate: filterStartDate ?? this.filterStartDate,
-      filterEndDate: filterEndDate ?? this.filterEndDate,
-      filterStatus: filterStatus ?? this.filterStatus,
+      selectedCategory: selectedCategory, // Allow null to clear filter
+      filterDateRange: filterDateRange, // Allow null to clear filter
+      filterStatus: filterStatus, // Allow null to clear filter
+      searchQuery: searchQuery, // Allow null to clear filter
     );
   }
 }
