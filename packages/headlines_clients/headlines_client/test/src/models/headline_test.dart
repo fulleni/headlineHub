@@ -34,7 +34,7 @@ void main() {
       happenedIn: country,
       language: language,
       category: HeadlineCategory.technology,
-      isActive: true,
+      status: true,
     );
 
     test('can be instantiated', () {
@@ -48,7 +48,7 @@ void main() {
       expect(headline.happenedIn, equals(country));
       expect(headline.language, equals(language));
       expect(headline.category, equals(HeadlineCategory.technology));
-      expect(headline.isActive, isTrue);
+      expect(headline.status, isTrue);
     });
 
     test('supports value equality', () {
@@ -65,7 +65,7 @@ void main() {
             happenedIn: country,
             language: language,
             category: HeadlineCategory.technology,
-            isActive: true,
+            status: true,
           ),
         ),
       );

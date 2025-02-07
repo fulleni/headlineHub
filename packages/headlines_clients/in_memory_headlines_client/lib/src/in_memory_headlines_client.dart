@@ -17,58 +17,71 @@ class InMemoryHeadlinesClient extends HeadlinesClient {
     List<Headline> headlines,
     HeadlineQueryOptions? options,
   ) {
+    if (options == null) return headlines;
+
     var filteredHeadlines = headlines;
 
-    if (options != null) {
-      if (options.startDate != null) {
-        filteredHeadlines = filteredHeadlines
-            .where(
-              (headline) => headline.publishedAt.isAfter(options.startDate!),
-            )
-            .toList();
-      }
-      if (options.endDate != null) {
-        filteredHeadlines = filteredHeadlines
-            .where(
-              (headline) => headline.publishedAt.isBefore(options.endDate!),
-            )
-            .toList();
-      }
-      if (options.isActive != null) {
-        filteredHeadlines = filteredHeadlines
-            .where((headline) => headline.isActive == options.isActive)
-            .toList();
-      }
-      filteredHeadlines.sort((a, b) {
-        int comparison;
-        switch (options.sortBy) {
-          case HeadlineSortBy.title:
-            comparison = a.title.compareTo(b.title);
-          case HeadlineSortBy.source:
-            comparison = a.publishedBy.name.compareTo(b.publishedBy.name);
-          case HeadlineSortBy.publishedAt:
-            comparison = a.publishedAt.compareTo(b.publishedAt);
-          case HeadlineSortBy.category:
-            comparison = a.title.compareTo(b.category.name);
-          case HeadlineSortBy.status:
-            comparison = a.title.compareTo(b.isActive.toString());
-        }
-        return options.sortDirection == SortDirection.ascending
-            ? comparison
-            : -comparison;
-      });
+    // Apply all filters simultaneously
+    filteredHeadlines = filteredHeadlines.where((headline) {
+      bool matchesFilters = true;
 
-      final startIndex = (options.page - 1) * options.limit;
-      final endIndex = startIndex + options.limit;
-      filteredHeadlines = filteredHeadlines.sublist(
-        startIndex,
-        endIndex > filteredHeadlines.length
-            ? filteredHeadlines.length
-            : endIndex,
-      );
-    }
+      // Date range filter
+      if (options.dateRange != null) {
+        matchesFilters = matchesFilters &&
+            headline.publishedAt.isAfter(options.dateRange!.start) &&
+            headline.publishedAt.isBefore(options.dateRange!.end);
+      }
 
-    return filteredHeadlines;
+      // Status filter
+      if (options.status != null) {
+        matchesFilters = matchesFilters && headline.status == options.status;
+      }
+
+      // Category filter
+      if (options.category != null) {
+        matchesFilters =
+            matchesFilters && headline.category == options.category;
+      }
+
+      // Search query filter
+      if (options.searchQuery != null && options.searchQuery!.isNotEmpty) {
+        final query = options.searchQuery!.toLowerCase();
+        matchesFilters = matchesFilters &&
+            (headline.title.toLowerCase().contains(query) ||
+                headline.content.toLowerCase().contains(query) ||
+                headline.publishedBy.name.toLowerCase().contains(query));
+      }
+
+      return matchesFilters;
+    }).toList();
+
+    // Apply sorting
+    filteredHeadlines.sort((a, b) {
+      int comparison;
+      switch (options.sortBy) {
+        case HeadlineSortBy.title:
+          comparison = a.title.compareTo(b.title);
+        case HeadlineSortBy.source:
+          comparison = a.publishedBy.name.compareTo(b.publishedBy.name);
+        case HeadlineSortBy.publishedAt:
+          comparison = a.publishedAt.compareTo(b.publishedAt);
+        case HeadlineSortBy.category:
+          comparison = a.category.name.compareTo(b.category.name);
+        case HeadlineSortBy.status:
+          comparison = a.status.name.compareTo(b.status.name);
+      }
+      return options.sortDirection == SortDirection.ascending
+          ? comparison
+          : -comparison;
+    });
+
+    // Apply pagination
+    final startIndex = (options.page - 1) * options.limit;
+    final endIndex = startIndex + options.limit;
+    return filteredHeadlines.sublist(
+      startIndex,
+      endIndex > filteredHeadlines.length ? filteredHeadlines.length : endIndex,
+    );
   }
 
   @override
@@ -136,96 +149,6 @@ class InMemoryHeadlinesClient extends HeadlinesClient {
       _headlines.removeAt(index);
     } catch (e) {
       throw const HeadlineDeletionException('Failed to delete headline');
-    }
-  }
-
-  @override
-  Future<PaginatedResponse<Headline>> getHeadlinesByQuery(
-    String query, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      var filteredHeadlines = _headlines
-          .where((headline) => headline.title.contains(query))
-          .toList();
-      filteredHeadlines = _applyFilters(filteredHeadlines, options);
-      final totalItems = filteredHeadlines.length;
-      final totalPages = (totalItems / (options?.limit ?? 20)).ceil();
-      final hasNextPage = (options?.page ?? 1) < totalPages;
-
-      return PaginatedResponse<Headline>(
-        items: filteredHeadlines,
-        currentPage: options?.page ?? 1,
-        totalPages: totalPages,
-        totalItems: totalItems,
-        hasNextPage: hasNextPage,
-        hasPreviousPage: (options?.page ?? 1) > 1,
-      );
-    } catch (e) {
-      throw const HeadlineSearchingException('Failed to search headlines');
-    }
-  }
-
-  @override
-  Future<PaginatedResponse<Headline>> getHeadlinesByCategory(
-    HeadlineCategory category, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      var filteredHeadlines = _headlines
-          .where((headline) => headline.category == category)
-          .toList();
-      filteredHeadlines = _applyFilters(filteredHeadlines, options);
-      final totalItems = filteredHeadlines.length;
-      final totalPages = (totalItems / (options?.limit ?? 20)).ceil();
-      final hasNextPage = (options?.page ?? 1) < totalPages;
-
-      return PaginatedResponse<Headline>(
-        items: filteredHeadlines,
-        currentPage: options?.page ?? 1,
-        totalPages: totalPages,
-        totalItems: totalItems,
-        hasNextPage: hasNextPage,
-        hasPreviousPage: (options?.page ?? 1) > 1,
-      );
-    } catch (e) {
-      throw const HeadlineCategoryException(
-        'Failed to fetch headlines for category',
-      );
-    }
-  }
-
-  @override
-  Future<PaginatedResponse<Headline>> getHeadlinesByDateRange(
-    DateTime startDate,
-    DateTime endDate, [
-    HeadlineQueryOptions? options,
-  ]) async {
-    try {
-      var filteredHeadlines = _headlines
-          .where(
-            (headline) =>
-                headline.publishedAt.isAfter(startDate) &&
-                headline.publishedAt.isBefore(endDate),
-          )
-          .toList();
-      filteredHeadlines = _applyFilters(filteredHeadlines, options);
-      final totalItems = filteredHeadlines.length;
-      final totalPages = (totalItems / (options?.limit ?? 20)).ceil();
-      final hasNextPage = (options?.page ?? 1) < totalPages;
-
-      return PaginatedResponse<Headline>(
-        items: filteredHeadlines,
-        currentPage: options?.page ?? 1,
-        totalPages: totalPages,
-        totalItems: totalItems,
-        hasNextPage: hasNextPage,
-        hasPreviousPage: (options?.page ?? 1) > 1,
-      );
-    } catch (e) {
-      throw const HeadlineDateRangeException(
-        'Failed to fetch headlines for date range',
-      );
     }
   }
 }

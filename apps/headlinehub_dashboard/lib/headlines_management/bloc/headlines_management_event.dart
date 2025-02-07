@@ -79,3 +79,42 @@ final class HeadlinesSortRequested extends HeadlinesManagementEvent {
 final class HeadlineUndoDeleteRequested extends HeadlinesManagementEvent {
   const HeadlineUndoDeleteRequested();
 }
+
+// Add these new events
+final class HeadlinesFetchByFiltersRequested extends HeadlinesManagementEvent {
+  const HeadlinesFetchByFiltersRequested({
+    this.category,
+    this.startDate,
+    this.endDate,
+    this.status,
+  });
+
+  final HeadlineCategory? category;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final bool? status;
+}
+
+final class HeadlinesCategoryFilterChanged extends HeadlinesManagementEvent {
+  const HeadlinesCategoryFilterChanged(this.category);
+  final HeadlineCategory? category;
+}
+
+final class HeadlinesStartDateFilterChanged extends HeadlinesManagementEvent {
+  const HeadlinesStartDateFilterChanged(this.date);
+  final DateTime date;
+}
+
+final class HeadlinesEndDateFilterChanged extends HeadlinesManagementEvent {
+  const HeadlinesEndDateFilterChanged(this.date);
+  final DateTime date;
+}
+
+final class HeadlinesStatusFilterChanged extends HeadlinesManagementEvent {
+  const HeadlinesStatusFilterChanged(this.status);
+  final bool? status;
+}
+
+final class HeadlinesFilterReset extends HeadlinesManagementEvent {
+  const HeadlinesFilterReset();
+}
