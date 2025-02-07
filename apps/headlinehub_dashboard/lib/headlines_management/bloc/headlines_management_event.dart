@@ -65,3 +65,13 @@ final class HeadlinesPerPageUpdated extends HeadlinesManagementEvent {
 
   final int perPage;
 }
+
+final class HeadlinesSortRequested extends HeadlinesManagementEvent {
+  const HeadlinesSortRequested({
+    required this.sortBy,
+    required this.sortDirection,
+  });
+
+  final HeadlineSortBy sortBy;
+  final SortDirection sortDirection;
+}

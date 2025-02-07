@@ -18,6 +18,8 @@ class HeadlinesManagementState {
     this.currentPage = 1,
     this.totalPages = 1,
     this.perPage = 5,
+    this.sortBy = HeadlineSortBy.publishedAt,
+    this.sortDirection = SortDirection.descending,
   });
 
   /// The current status of the headlines management page.
@@ -44,6 +46,12 @@ class HeadlinesManagementState {
   /// nuumber of headlines to fetch and show.
   final int perPage;
 
+  /// The current sort field
+  final HeadlineSortBy sortBy;
+
+  /// The current sort direction
+  final SortDirection sortDirection;
+
   /// Creates a copy of this [HeadlinesManagementState] with the given
   /// fields replaced with new values.
   HeadlinesManagementState copyWith({
@@ -57,6 +65,8 @@ class HeadlinesManagementState {
     int? currentPage,
     int? totalPages,
     int? perPage,
+    HeadlineSortBy? sortBy,
+    SortDirection? sortDirection,
   }) {
     return HeadlinesManagementState(
       fetchStatus: fetchStatus ?? this.fetchStatus,
@@ -69,6 +79,8 @@ class HeadlinesManagementState {
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       perPage: perPage ?? this.perPage,
+      sortBy: sortBy ?? this.sortBy,
+      sortDirection: sortDirection ?? this.sortDirection,
     );
   }
 }

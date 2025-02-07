@@ -136,14 +136,21 @@ class HeadlineQueryOptions {
 
 /// Available fields for sorting headlines
 enum HeadlineSortBy {
-  /// Sort by publication date
-  publishedAt,
-
   /// Sort by title
   title,
 
   /// Sort by source
-  source
+  source,
+
+  /// Sort by category
+  category,
+
+
+  /// Sort by publication date
+  publishedAt,
+
+  /// Sort by status
+  status,
 }
 
 /// Direction for sorting results

@@ -20,6 +20,7 @@ class HeadlinesManagementBloc
     on<HeadlinesFetchByDateRangeRequested>(
         _onHeadlinesFetchByDateRangeRequested);
     on<HeadlinesPerPageUpdated>(_onHeadlinesPerPageUpdated);
+    on<HeadlinesSortRequested>(_onHeadlinesSortRequested);
   }
 
   final HeadlinesRepository headlinesRepository;
@@ -215,4 +216,31 @@ class HeadlinesManagementBloc
     Emitter<HeadlinesManagementState> emit,
   ) =>
       emit(state.copyWith(perPage: event.perPage));
+
+  Future<void> _onHeadlinesSortRequested(
+    HeadlinesSortRequested event,
+    Emitter<HeadlinesManagementState> emit,
+  ) async {
+    emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.loading));
+    try {
+      final options = HeadlineQueryOptions(
+        page: state.currentPage,
+        limit: state.perPage,
+        sortBy: event.sortBy,
+        sortDirection: event.sortDirection,
+      );
+      final headlines = await headlinesRepository.getHeadlines(options);
+      emit(
+        state.copyWith(
+          fetchStatus: HeadlinesManagementStatus.success,
+          headlines: headlines.items,
+          hasNextPage: headlines.hasNextPage,
+          sortBy: event.sortBy,
+          sortDirection: event.sortDirection,
+        ),
+      );
+    } catch (_) {
+      emit(state.copyWith(fetchStatus: HeadlinesManagementStatus.failure));
+    }
+  }
 }

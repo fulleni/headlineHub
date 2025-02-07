@@ -33,11 +33,13 @@ class _HeadlinesManagementView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Headlines'),
         actions: [
+          const _SearchButton(),
           _AddHeadlineButton(),
         ],
       ),
       body: BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
         builder: (context, state) {
+          print('REBUILDING _HeadlinesManagementView');
           if (state.fetchStatus == HeadlinesManagementStatus.loading) {
             return const _LoadingView();
           } else if (state.fetchStatus == HeadlinesManagementStatus.failure) {
@@ -80,165 +82,16 @@ class _SuccessView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final availableHeight = constraints.maxHeight;
-        const paginationHeight = 60.0; // Approximate height of pagination
-        final tableHeight = availableHeight - paginationHeight;
-
-        return CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: tableHeight,
-                child: _HeadlineTable(headlines: headlines),
-              ),
-            ),
-            SliverToBoxAdapter(child: _Pagination()),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// A search bar for filtering headlines.
-class _SearchBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: TextField(
-        decoration: const InputDecoration(
-          hintText: 'Search...',
-          border: OutlineInputBorder(),
-          suffixIcon: Icon(Icons.search),
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: SizedBox(
+            // height: tableHeight,
+            child: _HeadlineTable(headlines: headlines),
+          ),
         ),
-        onChanged: (query) {
-          context
-              .read<HeadlinesManagementBloc>()
-              .add(HeadlinesFetchByQueryRequested(query));
-        },
-      ),
-    );
-  }
-}
-
-/// Filters for the headlines management page.
-class _Filters extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Row(
-        children: [
-          _DropdownFilter(
-            label: 'Source',
-            items: const ['Source A', 'Source B', 'Source C'],
-            onChanged: (value) {
-              // Handle source filter change
-            },
-          ),
-          _DropdownFilter(
-            label: 'Category',
-            items: HeadlineCategory.values.map((e) => e.name).toList(),
-            onChanged: (value) {
-              context.read<HeadlinesManagementBloc>().add(
-                    HeadlinesFetchByCategoryRequested(
-                      HeadlineCategory.values.firstWhere(
-                        (e) => e.name == value,
-                      ),
-                    ),
-                  );
-            },
-          ),
-          _DropdownFilter(
-            label: 'Status',
-            items: const ['Published', 'Draft'],
-            onChanged: (value) {
-              // Handle status filter change
-            },
-          ),
-          _DatePickerFilter(
-            label: 'Date',
-            onChanged: (startDate, endDate) {
-              context.read<HeadlinesManagementBloc>().add(
-                    HeadlinesFetchByDateRangeRequested(startDate, endDate),
-                  );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// A dropdown filter widget.
-class _DropdownFilter extends StatelessWidget {
-  const _DropdownFilter({
-    required this.label,
-    required this.items,
-    required this.onChanged,
-  });
-
-  final String label;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            labelText: label,
-            border: const OutlineInputBorder(),
-          ),
-          items: items
-              .map(
-                (item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                ),
-              )
-              .toList(),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-}
-
-/// A date picker filter widget.
-class _DatePickerFilter extends StatelessWidget {
-  const _DatePickerFilter({
-    required this.label,
-    required this.onChanged,
-  });
-
-  final String label;
-  final void Function(DateTime startDate, DateTime endDate) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: ElevatedButton(
-          onPressed: () async {
-            final dateRange = await showDateRangePicker(
-              context: context,
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-            );
-            if (dateRange != null) {
-              onChanged(dateRange.start, dateRange.end);
-            }
-          },
-          child: Text(label),
-        ),
-      ),
+        SliverToBoxAdapter(child: _Pagination()),
+      ],
     );
   }
 }
@@ -251,76 +104,71 @@ class _HeadlineTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const middleColumnWidthWidth = 80.0;
-        var edgeColumnWidth =
-            (constraints.maxWidth - (middleColumnWidthWidth * 4)) / 2;
-        final isMobile = constraints.maxWidth < 600;
-
-        if (isMobile) {
-          edgeColumnWidth = constraints.maxWidth / 2;
-        }
+    return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
+      builder: (context, state) {
         return SingleChildScrollView(
           child: DataTable(
+            showBottomBorder: true,
+            sortColumnIndex: state.sortBy.index,
+            sortAscending: state.sortDirection == SortDirection.ascending,
             columns: [
               DataColumn(
-                label: SizedBox(
-                  width: edgeColumnWidth,
-                  child: const Text(
-                    'Title',
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                label: const Text('Title'),
+                onSort: (_, __) => _onSort(
+                  context,
+                  HeadlineSortBy.title,
+                  state.sortBy == HeadlineSortBy.title &&
+                          state.sortDirection == SortDirection.ascending
+                      ? SortDirection.descending
+                      : SortDirection.ascending,
                 ),
               ),
-              if (!isMobile)
-                const DataColumn(
-                  label: SizedBox(
-                    width: middleColumnWidthWidth,
-                    child: Text(
-                      'Source',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              if (!isMobile)
-                const DataColumn(
-                  label: SizedBox(
-                    width: middleColumnWidthWidth,
-                    child: Text(
-                      'Category',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              if (!isMobile)
-                const DataColumn(
-                  label: SizedBox(
-                    width: middleColumnWidthWidth,
-                    child: Text(
-                      'Published At',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              if (!isMobile)
-                const DataColumn(
-                  label: SizedBox(
-                    width: middleColumnWidthWidth,
-                    child: Text(
-                      'Status',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
               DataColumn(
-                label: SizedBox(
-                  width: edgeColumnWidth,
-                  child: const Text(
-                    'Actions',
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                label: const Text('Source'),
+                onSort: (_, __) => _onSort(
+                  context,
+                  HeadlineSortBy.source,
+                  state.sortBy == HeadlineSortBy.source &&
+                          state.sortDirection == SortDirection.ascending
+                      ? SortDirection.descending
+                      : SortDirection.ascending,
                 ),
+              ),
+              DataColumn(
+                label: const Text('Category'),
+                onSort: (_, __) => _onSort(
+                  context,
+                  HeadlineSortBy.category,
+                  state.sortBy == HeadlineSortBy.category &&
+                          state.sortDirection == SortDirection.ascending
+                      ? SortDirection.descending
+                      : SortDirection.ascending,
+                ),
+              ),
+              DataColumn(
+                label: const Text('Published At'),
+                onSort: (_, __) => _onSort(
+                  context,
+                  HeadlineSortBy.publishedAt,
+                  state.sortBy == HeadlineSortBy.publishedAt &&
+                          state.sortDirection == SortDirection.ascending
+                      ? SortDirection.descending
+                      : SortDirection.ascending,
+                ),
+              ),
+              DataColumn(
+                label: const Text('Status'),
+                onSort: (_, __) => _onSort(
+                  context,
+                  HeadlineSortBy.status,
+                  state.sortBy == HeadlineSortBy.status &&
+                          state.sortDirection == SortDirection.ascending
+                      ? SortDirection.descending
+                      : SortDirection.ascending,
+                ),
+              ),
+              const DataColumn(
+                label: Text('Actions'),
               ),
             ],
             rows: headlines.map((headline) {
@@ -328,63 +176,52 @@ class _HeadlineTable extends StatelessWidget {
                 cells: [
                   DataCell(
                     SizedBox(
-                      width: edgeColumnWidth,
                       child: Text(
                         headline.title,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
-                  if (!isMobile)
-                    DataCell(
-                      SizedBox(
-                        width: middleColumnWidthWidth,
-                        child: Text(
-                          headline.publishedBy.name,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  if (!isMobile)
-                    DataCell(
-                      SizedBox(
-                        width: middleColumnWidthWidth,
-                        child: Text(
-                          headline.category.name,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  if (!isMobile)
-                    DataCell(
-                      SizedBox(
-                        width: middleColumnWidthWidth,
-                        child: Text(
-                          headline.publishedAt.toIso8601String(),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  if (!isMobile)
-                    DataCell(
-                      SizedBox(
-                        width: middleColumnWidthWidth,
-                        child: Text(
-                          headline.isActive ? 'Published' : 'Draft',
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
                   DataCell(
                     SizedBox(
-                      width: edgeColumnWidth,
+                      child: Text(
+                        headline.publishedBy.name,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    SizedBox(
+                      child: Text(
+                        headline.category.name,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    SizedBox(
+                      child: Text(
+                        headline.publishedAt.toIso8601String(),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    SizedBox(
+                      child: Text(
+                        headline.isActive ? 'Published' : 'Draft',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    SizedBox(
                       child: Row(
                         children: [
                           IconButton(
                             icon: const Icon(Icons.edit),
                             onPressed: () async {
-                              final result =
-                                  await Navigator.of(context).push<bool>(
+                              final result = await Navigator.of(context).push<bool>(
                                 MaterialPageRoute<bool>(
                                   builder: (context) => HeadlineUpdatePage(
                                     headline: headline,
@@ -425,6 +262,19 @@ class _HeadlineTable extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _onSort(
+    BuildContext context,
+    HeadlineSortBy sortBy,
+    SortDirection direction,
+  ) {
+    context.read<HeadlinesManagementBloc>().add(
+          HeadlinesSortRequested(
+            sortBy: sortBy,
+            sortDirection: direction,
+          ),
+        );
   }
 }
 
@@ -502,7 +352,6 @@ class _ItemsPerPageDropdown extends StatelessWidget {
   }
 }
 
-/// Button for adding a new headline.
 class _AddHeadlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -532,5 +381,88 @@ class _AddHeadlineButton extends StatelessWidget {
         icon: const Icon(Icons.add),
       ),
     );
+  }
+}
+
+class _SearchButton extends StatelessWidget {
+  const _SearchButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.search),
+      onPressed: () {
+        showSearch(
+          context: context,
+          delegate: HeadlinesSearchDelegate(
+            BlocProvider.of<HeadlinesManagementBloc>(context),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class HeadlinesSearchDelegate extends SearchDelegate<String> {
+  HeadlinesSearchDelegate(this.bloc);
+
+  final HeadlinesManagementBloc bloc;
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, '');
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    bloc.add(HeadlinesFetchByQueryRequested(query));
+    return BlocBuilder<HeadlinesManagementBloc, HeadlinesManagementState>(
+      bloc: bloc,
+      builder: (context, state) {
+        if (state.fetchStatus == HeadlinesManagementStatus.loading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state.fetchStatus == HeadlinesManagementStatus.failure) {
+          return const Center(child: Text('Failed to fetch headlines'));
+        } else if (state.fetchStatus == HeadlinesManagementStatus.success) {
+          return ListView.builder(
+            itemCount: state.headlines.length,
+            itemBuilder: (context, index) {
+              final headline = state.headlines[index];
+              return ListTile(
+                title: Text(headline.title),
+                subtitle: Text(headline.publishedBy.name),
+                onTap: () {
+                  close(context, headline.title);
+                },
+              );
+            },
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return Container();
   }
 }

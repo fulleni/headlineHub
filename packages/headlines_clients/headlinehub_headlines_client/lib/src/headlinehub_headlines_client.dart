@@ -53,6 +53,10 @@ class HeadlinehubHeadlinesClient extends HeadlinesClient {
             comparison = a.publishedBy.name.compareTo(b.publishedBy.name);
           case HeadlineSortBy.publishedAt:
             comparison = a.publishedAt.compareTo(b.publishedAt);
+          case HeadlineSortBy.category:
+            comparison = a.title.compareTo(b.category.name);
+          case HeadlineSortBy.status:
+            comparison = a.title.compareTo(b.isActive.toString());
         }
         return options.sortDirection == SortDirection.ascending
             ? comparison
